@@ -1,36 +1,127 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Univ-Check UI
+
+A modern attendance management system for universities that helps administrators track professor attendance and efficiently organize teaching sessions.
+
+![Univ-Check UI Screenshot](https://originui.com/_next/image?url=%2Flayouts%2Fapp-1.png&w=1200&q=75)
+_This image represents the minimalist and modern design style we're aiming for with Univ-Check 😭🚀._
+
+## Overview
+
+Univ-Check UI is an open-source project aimed at providing universities with a robust system to manage and track professor attendance. The system enables university administrators to:
+
+- Monitor professor attendance and punctuality
+- Organize and schedule courses efficiently
+- Generate attendance reports and analytics
+- Manage manual attendance validation
+
+## Technologies
+
+- **Framework**: [Next.js 15](https://nextjs.org/)
+- **UI Components**:
+  - [shadcn/ui](https://ui.shadcn.com/)
+  - [Origin UI](https://originui.com/) - Beautiful UI components built with Tailwind CSS and React
+- **Styling**: [Tailwind CSS 4](https://tailwindcss.com/)
+- **Form Management**: [React Hook Form](https://react-hook-form.com/)
+- **Validation**: [Zod](https://github.com/colinhacks/zod)
+- **State Management**:
+  - [TanStack Query](https://tanstack.com/query) - Server state
+  - [Zustand](https://github.com/pmndrs/zustand) - Client state
+- **URL State Management**: [Nuqs](https://nuqs.47ng.com/) - Type-safe URL query state management
+- **Authentication**: [Better Auth](http://better-auth.com/) - Authentication framework
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
+
+- Node.js 18.x or higher
+- pnpm 8.x or higher
+
+### Installation
+
+1. Clone the repository:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone https://github.com/tiger-githubb/univ-check-ui.git
+cd univ-check-ui
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2. Install dependencies:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+pnpm install
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+3. Run the development server:
 
-## Learn More
+```bash
+pnpm dev
+```
 
-To learn more about Next.js, take a look at the following resources:
+4. Open [http://localhost:3007](http://localhost:3007) with your browser to see the application.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Project Structure
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+The project follows a structured organization to maintain scalability and separation of concerns:
 
-## Deploy on Vercel
+```
+src/
+├── app/                    # Next.js App Router routes and pages
+├── components/             # Reusable UI components
+├── config/                 # Global configuration and constants
+├── hooks/                  # Custom React hooks
+├── lib/                    # Utility functions
+├── schema/                 # Validation schemas (Zod)
+└── server/                 # Server-side logic and services
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+See [CONTRIBUTING.md](./CONTRIBUTING.md) for detailed information about the project structure and conventions.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Authentication Demo
+
+For testing purposes, you can use the following credentials:
+
+- **Admin:**
+
+  - Email: admin@univ-check.fr
+  - Password: Admin123!
+
+- **Professor:**
+  - Email: professeur@univ-check.fr
+  - Password: Prof123!
+
+## Contributing
+
+We welcome contributions to the Univ-Check UI project! Please read our [Contributing Guide](./CONTRIBUTING.md) to get started. The guide includes detailed information about:
+
+- Project structure and conventions
+- Component organization
+- Development workflow
+- Code style guidelines
+
+## Development Roadmap
+
+- [x] Configuration and architecture
+- [ ] Integration with the backend API
+- [ ] Authentication system
+- [ ] Dashboard for administrators
+- [ ] Professor management
+- [ ] Course scheduling
+- [ ] Attendance tracking and reporting
+- [ ] Mobile-responsive design
+- [ ] Real-time notifications
+- [ ] User feedback and bug reporting
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Acknowledgments
+
+- [Next.js](https://nextjs.org/)
+- [shadcn/ui](https://ui.shadcn.com/)
+- [Origin UI](https://originui.com/)
+- [Tailwind CSS](https://tailwindcss.com/)
+- [TanStack Query](https://tanstack.com/query)
+- [Zustand](https://github.com/pmndrs/zustand)
+- [Better Auth](http://better-auth.com/)
+- All our contributors and supporters

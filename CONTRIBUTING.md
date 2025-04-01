@@ -20,14 +20,13 @@ This document outlines the conventions and standards to follow when contributing
 ```
 src/
 ├── app/                    # Routes and pages (Next.js App Router)
-│   ├── (auth)/             # Grouped routes by feature (with parentheses)
-│   ├── (dashboard)/        # Dashboard routes
+│   ├── (auth)/             # Grouped routes by feature
+│   ├── dashboard/          # Dashboard routes
 │   └── ...
 ├── components/             # Reusable UI components
 │   ├── ui/                 # Base components (shadcn/ui only)
-│   ├── enhanced/           # Enhanced shadcn components with logic
+│   ├──── enhanced/           # Enhanced shadcn components with logic
 │   ├── shared/             # Custom shared components
-│   ├── theme/              # Theme-related components
 │   └── ...
 ├── config/                 # Global configuration
 │   ├── constants.ts        # Application constants
