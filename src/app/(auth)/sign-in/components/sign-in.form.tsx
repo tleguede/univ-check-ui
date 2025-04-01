@@ -1,25 +1,24 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
 import { useState } from "react";
+import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
-import { signInSchema, type SignInInput } from "@/schema/sign-in.schema";
-import { messages } from "@/config/messages";
-import { AUTH_CONSTANTS } from "@/config/constants";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import Link from "next/link";
+import { messages } from "@/config/messages";
 import { routes } from "@/config/routes";
-import { useSignIn } from "@/hooks/auth/use-sign-in";
+import { useSignInMutation } from "@/hooks/queries/use-auth.query";
+import { signInSchema, type SignInInput } from "@/schema/sign-in.schema";
+import { AuthenticationError } from "@/server/services/auth.service";
+import Link from "next/link";
 
 export function SignInForm() {
   const [formError, setFormError] = useState<string | null>(null);
-
   const form = useForm<SignInInput>({
     resolver: zodResolver(signInSchema),
     defaultValues: {
@@ -28,27 +27,28 @@ export function SignInForm() {
     },
   });
 
-  const { mutate: signIn, isPending } = useSignIn({
-    onSuccess: () => {
-      toast.success(messages.auth.signin.success);
-      // Ici, vous pourriez rediriger l'utilisateur ou mettre à jour l'état global
-    },
-    onError: (error) => {
-      setFormError(messages.auth.signin.failed);
-      toast.error(messages.auth.signin.failed);
-    },
-  });
+  const { mutate: signIn, isPending } = useSignInMutation();
 
   function onSubmit(data: SignInInput) {
     setFormError(null);
-
     // Toast de chargement
     const loadingToast = toast.loading("Connexion en cours...");
 
-    // Utiliser le hook de mutation pour gérer la connexion
     signIn(data, {
+      onSuccess: (data) => {
+        toast.success(`Bienvenue, ${data.user.name}`);
+      },
+      onError: (error) => {
+        if (error instanceof AuthenticationError) {
+          setFormError(messages.auth.signin.failed);
+        } else {
+          setFormError("Une erreur est survenue lors de la connexion.");
+        }
+        toast.error(
+          error instanceof AuthenticationError ? messages.auth.signin.failed : "Une erreur est survenue lors de la connexion."
+        );
+      },
       onSettled: () => {
-        // Fermer le toast de chargement quand terminé (succès ou erreur)
         toast.dismiss(loadingToast);
       },
     });
@@ -68,7 +68,6 @@ export function SignInForm() {
             <AlertDescription>{formError}</AlertDescription>
           </Alert>
         )}
-
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <FormField
@@ -98,7 +97,6 @@ export function SignInForm() {
                 </FormItem>
               )}
             />
-
             <Button type="submit" className="w-full" disabled={isPending}>
               {isPending ? "Connexion en cours..." : "Se connecter"}
             </Button>
