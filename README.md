@@ -124,4 +124,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - [TanStack Query](https://tanstack.com/query)
 - [Zustand](https://github.com/pmndrs/zustand)
 - [Better Auth](http://better-auth.com/)
-- All our contributors and supporters
+
+![Project analytics and stats](https://repobeats.axiom.co/api/embed/7ef65e62ef6cb949b5d3f242c4b2a58af1df6ba1.svg "Repobeats analytics image")
+
+_All our contributors and supporters are welcome to join us and help us make Univ-Check the best attendance tracking system out there!_
