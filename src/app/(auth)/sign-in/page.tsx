@@ -1,4 +1,4 @@
-import { ModeToggle } from "@/components/theme/mode-toggle";
+import { ModeToggle } from "@/components/shared/theme/mode-toggle";
 import { SignInForm } from "./components/sign-in.form";
 
 export default function SignInPage() {
