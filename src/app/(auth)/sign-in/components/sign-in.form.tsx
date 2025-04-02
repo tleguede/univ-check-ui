@@ -16,8 +16,10 @@ import { useSignInMutation } from "@/hooks/queries/use-auth.query";
 import { signInSchema, type SignInInput } from "@/schema/sign-in.schema";
 import { AuthenticationError } from "@/server/services/auth.service";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 export function SignInForm() {
+  const router = useRouter();
   const [formError, setFormError] = useState<string | null>(null);
   const form = useForm<SignInInput>({
     resolver: zodResolver(signInSchema),
@@ -37,6 +39,7 @@ export function SignInForm() {
     signIn(data, {
       onSuccess: (data) => {
         toast.success(`Bienvenue, ${data.user.name}`);
+        router.push(routes.app.dashboard);
       },
       onError: (error) => {
         if (error instanceof AuthenticationError) {
