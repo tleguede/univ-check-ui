@@ -1,7 +1,7 @@
 import * as React from "react";
 
 import { SearchForm } from "@/components/shared/navigation/search.form";
-import { TeamSwitcher } from "@/components/shared/navigation/team-switcher";
+import { TeamSwitcher } from "@/components/shared/navigation/team.switcher";
 import {
   Sidebar,
   SidebarContent,

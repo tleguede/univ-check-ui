@@ -6,9 +6,9 @@ export const metadata: Metadata = {
 
 import { StatsGrid } from "@/app/dashboard/components/stats-grid";
 import ContactsTable from "@/app/dashboard/components/table/contacts.table";
-import { AppSidebar } from "@/components/shared/navigation/app-sidebar";
-import UserDropdown from "@/components/shared/navigation/user-dropdown";
-import FeedbackDialog from "@/components/shared/others/feedback-dialog";
+import { AppSidebar } from "@/components/shared/navigation/app.sidebar";
+import UserDropdown from "@/components/shared/navigation/user.dropdown";
+import FeedbackDialog from "@/components/shared/others/feedback.dialog";
 import { ModeToggle } from "@/components/shared/theme/mode-toggle";
 import {
   Breadcrumb,
