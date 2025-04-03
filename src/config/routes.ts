@@ -1,23 +1,14 @@
 export const routes = {
   auth: {
-    signIn: "/sign-in",
-    signUp: "/sign-up",
-    forgotPassword: "/forgot-password",
-    resetPassword: "/reset-password",
+    signIn: "auth/sign-in",
+    signUp: "auth/sign-up",
+    forgotPassword: "auth/forgot-password",
+    resetPassword: "auth/reset-password",
   },
-  app: {
-    dashboard: "/dashboard",
-    profile: "/profile",
-    settings: "/settings",
-  },
-  admin: {
-    users: "/admin/users",
-    universities: "/admin/universities",
-    departments: "/admin/departments",
-    courses: "/admin/courses",
-  },
-  professor: {
-    attendance: "/professor/attendance",
-    schedule: "/professor/schedule",
+  board: {
+    home: "/board",
+    users: "board/users",
+    profile: "board/profile",
+    settings: "board/settings",
   },
 };
