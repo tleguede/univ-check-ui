@@ -4,8 +4,6 @@ export const metadata: Metadata = {
   title: "Dashbord page",
 };
 
-import { StatsGrid } from "@/app/dashboard/components/stats-grid";
-import ContactsTable from "@/app/dashboard/components/table/contacts.table";
 import { AppSidebar } from "@/components/shared/navigation/app.sidebar";
 import UserDropdown from "@/components/shared/navigation/user.dropdown";
 import FeedbackDialog from "@/components/shared/others/feedback.dialog";
@@ -22,6 +20,8 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { RiScanLine } from "@remixicon/react";
+import { StatsGrid } from "./components/stats-grid";
+import ContactsTable from "./components/table/contacts.table";
 
 export default function Page() {
   return (
