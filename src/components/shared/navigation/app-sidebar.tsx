@@ -1,7 +1,7 @@
 import * as React from "react";
 
-import { SearchForm } from "@/app/dashboard/components/search-form";
-import { TeamSwitcher } from "@/app/dashboard/components/team-switcher";
+import { SearchForm } from "@/components/shared/navigation/search.form";
+import { TeamSwitcher } from "@/components/shared/navigation/team-switcher";
 import {
   Sidebar,
   SidebarContent,
@@ -16,15 +16,15 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar";
 import {
-  RiScanLine,
   RiBardLine,
-  RiUserFollowLine,
   RiCodeSSlashLine,
-  RiLoginCircleLine,
   RiLayoutLeftLine,
-  RiSettings3Line,
   RiLeafLine,
+  RiLoginCircleLine,
   RiLogoutBoxLine,
+  RiScanLine,
+  RiSettings3Line,
+  RiUserFollowLine,
 } from "@remixicon/react";
 
 // This is sample data.
@@ -117,9 +117,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         {/* We create a SidebarGroup for each parent. */}
         {data.navMain.map((item) => (
           <SidebarGroup key={item.title}>
-            <SidebarGroupLabel className="uppercase text-muted-foreground/60">
-              {item.title}
-            </SidebarGroupLabel>
+            <SidebarGroupLabel className="uppercase text-muted-foreground/60">{item.title}</SidebarGroupLabel>
             <SidebarGroupContent className="px-2">
               <SidebarMenu>
                 {item.items.map((item) => (
