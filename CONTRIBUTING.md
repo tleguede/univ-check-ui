@@ -19,19 +19,23 @@ This document outlines the conventions and standards to follow when contributing
 
 ```
 src/
-├── app/                    # Routes and pages (Next.js App Router)
-│   ├── (auth)/             # Grouped routes by feature
-│   ├── dashboard/          # Dashboard routes
+├── app/                    # Next.js App Router routes and pages
+│   ├── auth/               # Authentication routes (formerly (auth))
+│   ├── board/              # Main application routes (formerly dashboard)
 │   └── ...
 ├── components/             # Reusable UI components
 │   ├── ui/                 # Base components (shadcn/ui only)
-│   ├──── enhanced/           # Enhanced shadcn components with logic
+│   ├── enhanced/           # Enhanced shadcn components with logic
 │   ├── shared/             # Custom shared components
+│   │   ├── navigation/     # Navigation-related components
+│   │   ├── theme/          # Theme-related components
+│   │   └── others/         # Other shared components
 │   └── ...
 ├── config/                 # Global configuration
 │   ├── constants.ts        # Application constants
 │   ├── messages.ts         # Error and success messages
-│   └── routes.ts           # Centralized route definitions
+│   ├── routes.ts           # Centralized route definitions
+│   └── navigation-items.tsx # Navigation configuration
 ├── hooks/                  # Custom React hooks
 │   ├── queries/            # TanStack Query hooks
 │   └── ...
@@ -50,16 +54,22 @@ src/
 
 ### Files and Folders
 
-- Use `kebab-case` for folder and file names
-  - Example: `sign-in/`, `forgot-password.tsx`
+- Use `kebab-case` for folder names
+  - Example: `sign-in/`, `board/`
+- For component files, use dot notation with descriptive suffixes instead of hyphens
+  - Example: `app.sidebar.tsx`, `feedback.dialog.tsx`, `team.switcher.tsx`
 - For pages, use `page.tsx` (Next.js convention)
 - For form components, use the convention: `{name}.form.tsx`
   - Example: `sign-in.form.tsx`
 - For layouts, use `layout.tsx` (Next.js convention)
 - For custom components, use the convention: `{name}.{component-type}.tsx`
-  - Example: `user-card.component.tsx`, `data-table.component.tsx`
+
+  - Example: `contacts.table.tsx`, `user.dropdown.tsx`
+
 - For custom hooks, prefix with `use-`
   - Example: `use-mobile.ts`
+- For query hooks, organize by feature and use `.query.ts` suffix
+  - Example: `use-auth.query.ts`
 
 ### Components and Classes
 
@@ -76,16 +86,21 @@ src/
 
 - **src/components/ui/**: Reserved EXCLUSIVELY for native shadcn/ui components. Only minimal style overrides are allowed here, NO additional logic.
 - **src/components/enhanced/**: For components that extend shadcn/ui components with additional logic or significant customizations.
+
   - Example: An enhanced `Button` with loading states or analytics tracking
-- **src/components/shared/**: For custom, reusable components that don't directly extend shadcn/ui components.
-  - Example: `user-profile.component.tsx`, `attendance-card.component.tsx`
-- **src/app/(feature)/components/**: For components specific to a feature or page that are not meant to be reused across the application.
+
+- **src/components/shared/**: For custom, reusable components across application areas
+  - **navigation/**: Navigation-related components (app.sidebar, search.form, team.switcher, user.dropdown)
+  - **theme/**: Theme-related components (mode-toggle)
+  - **others/**: Other shared components (feedback.dialog)
+- **src/app/(feature)/components/**: For components specific to a feature or page
+  - Can include subdirectories to categorize by type (e.g., `table/`, `form/`)
 
 ### Component Naming Standards
 
 - Base shadcn/ui components: Simple name (`button.tsx`)
 - Enhanced components: `{name}.enhanced.tsx` (e.g., `button.enhanced.tsx`)
-- Custom components: `{name}.component.tsx` (e.g., `attendance-table.component.tsx`)
+- Custom components: `{name}.{component-type}.tsx` (e.g., `contacts.table.tsx`)
 - Specialized components: `{name}.{specific-type}.tsx` (e.g., `professor-list.table.tsx`)
 
 ## Architecture and Patterns
@@ -95,6 +110,7 @@ src/
 - **Page components**: Should only contain page structure, no business logic
 - **Form components**: Should be placed in a `components` folder adjacent to the associated page
 - **UI components**: Should be in the appropriate components directory based on their type
+- **Navigation**: Navigation items should be defined in `src/config/navigation-items.tsx`
 
 ### Services
 
@@ -138,6 +154,11 @@ export function useCurrentUser() {
 }
 ```
 
+### Middleware
+
+- Place Next.js middleware in `src/middleware.ts`
+- Use middleware for route protection, redirects, and request/response modifications
+
 ## Styling and UI Components
 
 - Use Tailwind CSS for styling
@@ -146,10 +167,12 @@ export function useCurrentUser() {
 - For complex variations, use `cva` (class-variance-authority)
 - When extending shadcn components with styling only, you can create a variant in the same file
 - When adding logic, create an enhanced version in `src/components/enhanced/`
+- Use React icons and Remixicon for icons - import from `@remixicon/react`
 
 ## State Management
 
 - Use TanStack Query for server-related state management
+- Use TanStack Table for table-related state
 - Use React hooks (`useState`, `useReducer`) for local state
 - Avoid global state managers (Redux, Zustand) unless absolutely necessary
 - Use React contexts for state shared across multiple components
