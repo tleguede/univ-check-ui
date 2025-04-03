@@ -20,11 +20,13 @@ Univ-Check UI is an open-source project aimed at providing universities with a r
 - **UI Components**:
   - [shadcn/ui](https://ui.shadcn.com/)
   - [Origin UI](https://originui.com/) - Beautiful UI components built with Tailwind CSS and React
+  - [React Icons](https://react-icons.github.io/react-icons/icons?name=pi) - Using Phosphor Icons (pi) in dualtone style
 - **Styling**: [Tailwind CSS 4](https://tailwindcss.com/)
 - **Form Management**: [React Hook Form](https://react-hook-form.com/)
 - **Validation**: [Zod](https://github.com/colinhacks/zod)
 - **State Management**:
   - [TanStack Query](https://tanstack.com/query) - Server state
+  - [TanStack Table](https://tanstack.com/table) - Table state management
   - [Zustand](https://github.com/pmndrs/zustand) - Client state
 - **URL State Management**: [Nuqs](https://nuqs.47ng.com/) - Type-safe URL query state management
 - **Authentication**: [Better Auth](http://better-auth.com/) - Authentication framework
@@ -66,12 +68,34 @@ The project follows a structured organization to maintain scalability and separa
 ```
 src/
 ├── app/                    # Next.js App Router routes and pages
+│   ├── auth/               # Authentication routes
+│   ├── board/              # Main application routes (formerly dashboard)
+│   └── ...
 ├── components/             # Reusable UI components
-├── config/                 # Global configuration and constants
+│   ├── ui/                 # Base components (shadcn/ui only)
+│   ├── enhanced/           # Enhanced shadcn components with logic
+│   ├── shared/             # Custom shared components
+│   │   ├── navigation/     # Navigation-related components (app.sidebar, search.form, team.switcher)
+│   │   ├── theme/          # Theme-related components (mode-toggle)
+│   │   └── others/         # Other shared components (feedback.dialog)
+│   └── ...
+├── config/                 # Global configuration
+│   ├── constants.ts        # Application constants
+│   ├── messages.ts         # Error and success messages
+│   ├── routes.ts           # Centralized route definitions
+│   └── navigation-items.tsx # Navigation configuration
 ├── hooks/                  # Custom React hooks
-├── lib/                    # Utility functions
+│   ├── queries/            # TanStack Query hooks
+│   └── ...
+├── lib/                    # Utilities and functions
+│   └── utils.ts            # Utility functions
 ├── schema/                 # Validation schemas (Zod)
-└── server/                 # Server-side logic and services
+├── server/                 # Server-side logic
+│   ├── services/           # Business services
+│   └── ...
+└── utils/                  # Specific utilities
+    ├── providers/          # React providers
+    └── ...
 ```
 
 See [CONTRIBUTING.md](./CONTRIBUTING.md) for detailed information about the project structure and conventions.
@@ -122,6 +146,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - [Origin UI](https://originui.com/)
 - [Tailwind CSS](https://tailwindcss.com/)
 - [TanStack Query](https://tanstack.com/query)
+- [TanStack Table](https://tanstack.com/table)
 - [Zustand](https://github.com/pmndrs/zustand)
 - [Better Auth](http://better-auth.com/)
 
