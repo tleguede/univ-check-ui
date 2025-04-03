@@ -39,7 +39,7 @@ export function SignInForm() {
     signIn(data, {
       onSuccess: (data) => {
         toast.success(`Bienvenue, ${data.user.name}`);
-        router.push(routes.app.dashboard);
+        router.push(routes.board.home);
       },
       onError: (error) => {
         if (error instanceof AuthenticationError) {
