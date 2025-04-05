@@ -24,15 +24,15 @@ export interface NavMenuGroup {
 export const teamsData: TeamData[] = [
   {
     name: "Esgis Avedji",
-    logo: "https://res.cloudinary.com/dlzlfasou/image/upload/v1741345507/logo-01_kp2j8x.png",
+    logo: "https://ui-avatars.com/api/?name=Esgis+Avedji&background=random",
   },
   {
     name: "Esgis Adjidogomé",
-    logo: "https://ui-avatars.com/api/?name=Ecme+Aorp&background=0D8ABC&color=fff",
+    logo: "https://ui-avatars.com/api/?name=Esgis+Adjidogome&background=random",
   },
   {
     name: "Esgis Kodjoviakopé",
-    logo: "https://ui-avatars.com/api/?name=Ecme+Korp&background=random",
+    logo: "https://ui-avatars.com/api/?name=Esgis+Kodjoviakope&background=random",
   },
 ];
 
