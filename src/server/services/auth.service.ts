@@ -1,5 +1,6 @@
 import { AUTH_CONSTANTS } from "@/config/constants";
 import { SignInInput } from "@/schema/sign-in.schema";
+import api from "@/utils/axios";
 
 export interface AuthResponse {
   user: {
@@ -20,7 +21,16 @@ export class AuthenticationError extends Error {
 
 export class AuthService {
   static async signIn(credentials: SignInInput): Promise<AuthResponse> {
-    await new Promise((resolve) => setTimeout(resolve, 2000));
+    try{
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+      // login 
+      const {data} = await api.post("/api/v1/auth/signin", {credentials});
+      return data;
+    }catch (error) {
+      console.error("Login failed:", error);
+      throw new AuthenticationError("Invalid credentials or server error."); 
+    }
+
 
     const { ADMIN, PROFESSOR } = AUTH_CONSTANTS.DEMO_CREDENTIALS;
 
