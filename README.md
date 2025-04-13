@@ -92,6 +92,11 @@ src/
 ├── schema/                 # Validation schemas (Zod)
 ├── server/                 # Server-side logic
 │   ├── services/           # Business services
+│   ├── middleware/         # Server middleware
+│   └── ...
+├── types/                  # TypeScript type definitions
+│   ├── auth.types.ts       # Authentication related types
+│   ├── rate-limiter.types.ts # Rate limiter related types
 │   └── ...
 └── utils/                  # Specific utilities
     ├── providers/          # React providers
