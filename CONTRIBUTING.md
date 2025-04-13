@@ -50,6 +50,12 @@ src/
     └── ...
 ```
 
+## VSCode Profile
+
+To ensure a consistent development environment, use the provided VSCode profile. This profile includes recommended extensions, settings, and keybindings tailored for the Univ-Check UI project.
+For optimal development experience, use this profile:
+https://vscode.dev/editor/profile/github/ed788ac8fb71413422ba77466533c052
+
 ## Naming Conventions
 
 ### Files and Folders
