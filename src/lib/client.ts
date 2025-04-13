@@ -1,8 +1,9 @@
 import { createAuthClient } from "better-auth/react";
 import axios from "axios";
+import { BetterAuthUser } from "@/types/auth.types";
 
-// URL de base de l'API (s'assurer qu'elle n'a pas de slash à la fin)
 const API_BASE_URL = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:19200").replace(/\/+$/, "");
+const SESSION_EXPIRY = 60 * 60; 
 
 // Client better-auth standard
 const betterAuthClient = createAuthClient({
@@ -13,8 +14,19 @@ const betterAuthClient = createAuthClient({
     signUpPath: "signup",
     forgotPasswordPath: "forgot-password",
     resetPasswordPath: "reset-password",
-    tokenStorageKey: "token",
-    userStorageKey: "user",
+    storage: {
+        type: "cookie",
+        options: {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "strict",
+            maxAge: SESSION_EXPIRY,
+            path: "/"
+        }
+    },
+    session: {
+        expiresIn: SESSION_EXPIRY
+    },
     redirectToSignIn: true,
     usePrefixedPaths: false,
 });
@@ -23,7 +35,7 @@ export const authClient = {
     ...betterAuthClient,
     signIn: {
         ...betterAuthClient.signIn,
-        email: async ({ email, password }: { email: string; password: string }) => {
+        email: async ({ email, password }: { email: string; password: string }): Promise<{ data: { user: BetterAuthUser; token: string } | null; error: { message: string } | null }> => {
             try {
                 const response = await axios.post(`${API_BASE_URL}/api/v1/auth/signin`, {
                     email,
