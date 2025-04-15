@@ -82,30 +82,49 @@ export class AuthService {
     }
   }
 
-  static async getCurrentUser(): Promise<AuthResponse["user"] | null> {
+  static async getCurrentUser(token: string): Promise<AuthResponse["user"] | null> {
     try {
-      const { data, error } = await authClient.getSession();
-
-      if (error || !data) {
+      if (!token) {
+        console.error("Aucun token d'authentification fourni");
         return null;
       }
 
-      let userData: UserData = data.user;
-
-      if (!userData && data.user?.email) {
-        userData = data.user;
-      } else if (!userData && typeof data === "object") {
-        const dataObj = data as Record<string, unknown>;
-        for (const key in dataObj) {
-          if (dataObj[key] && typeof dataObj[key] === "object" && "email" in dataObj[key] && typeof dataObj[key].email === "string") {
-            userData = dataObj[key] as UserData;
-            break;
+      const { data, error } = await authClient.getSession({
+        fetchOptions: {
+          headers: {
+            Authorization: `Bearer ${token}`
           }
         }
+      });
+
+      if (error || !data) {
+        console.error("Erreur lors de la récupération de la session:", error);
+        return null;
       }
 
+      // Si nous avons déjà les données de l'utilisateur dans la réponse, les utiliser
+      if (data.user && data.user.email) {
+        return data.user;
+      }
+
+      // Sinon, essayer de récupérer les données de l'utilisateur
+      const userResponse = await authClient.getUser({
+        fetchOptions: {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        }
+      });
+
+      if (userResponse.error || !userResponse.data) {
+        console.error("Erreur lors de la récupération des données de l'utilisateur:", userResponse.error);
+        return null;
+      }
+
+      const userData = userResponse.data;
+
       if (!userData || !userData.email) {
-        console.error("Structure de données utilisateur invalide dans getCurrentUser:", data);
+        console.error("Structure de données utilisateur invalide dans getCurrentUser:", userData);
         return null;
       }
 
