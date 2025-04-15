@@ -3,7 +3,7 @@ import axios from "axios";
 import { createAuthClient } from "better-auth/react";
 
 const API_BASE_URL = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:19200").replace(/\/+$/, "");
-const SESSION_EXPIRY = 60 * 60;
+const SESSION_EXPIRY = 60 * 60 * 24 * 7; // 7 jours
 
 // Client better-auth standard
 const betterAuthClient = createAuthClient({
@@ -19,7 +19,7 @@ const betterAuthClient = createAuthClient({
     options: {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
+      sameSite: "lax",
       maxAge: SESSION_EXPIRY,
       path: "/",
     },
@@ -30,7 +30,6 @@ const betterAuthClient = createAuthClient({
   redirectToSignIn: true,
   usePrefixedPaths: false,
 });
-
 export const authClient = {
   ...betterAuthClient,
   signIn: {
@@ -65,3 +64,4 @@ export const authClient = {
     },
   },
 };
+
