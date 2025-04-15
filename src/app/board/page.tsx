@@ -1,8 +1,4 @@
-import type { Metadata } from "next";
-
-export const metadata: Metadata = {
-  title: "Dashbord page",
-};
+"use client";
 
 import { AppSidebar } from "@/components/shared/navigation/app.sidebar";
 import UserDropdown from "@/components/shared/navigation/user.dropdown";
@@ -19,11 +15,15 @@ import {
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { useCurrentUser } from "@/hooks/queries/use-auth.query";
 import { RiScanLine } from "@remixicon/react";
 import { StatsGrid } from "./components/stats-grid";
 import ContactsTable from "./components/table/contacts.table";
 
 export default function Page() {
+  // Get the current user data using the useCurrentUser hook
+  const { data: user, isLoading } = useCurrentUser();
+
   return (
     <SidebarProvider>
       <AppSidebar />
@@ -57,9 +57,11 @@ export default function Page() {
           {/* Page intro */}
           <div className="flex items-center justify-between gap-4">
             <div className="space-y-1">
-              <h1 className="text-2xl font-semibold">Oilà, Larry!</h1>
+              <h1 className="text-2xl font-semibold">{isLoading ? "Chargement..." : <>Bonjour, {user?.name || "Utilisateur"}!</>}</h1>
               <p className="text-sm text-muted-foreground">
-                Here&rsquo;s an overview of your contacts. Manage or create new ones with ease!
+                {user?.role === "ADMIN"
+                  ? "Voici un aperçu du tableau de bord administrateur."
+                  : "Voici un aperçu de vos contacts. Gérez ou créez-en de nouveaux facilement !"}
               </p>
             </div>
             <Button className="px-3">Add Contact</Button>
