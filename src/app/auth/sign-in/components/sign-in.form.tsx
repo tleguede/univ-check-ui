@@ -37,9 +37,16 @@ export function SignInForm() {
     const loadingToast = toast.loading("Connexion en cours...");
 
     signIn(data, {
-      onSuccess: (data) => {
-        toast.success(`Bienvenue, ${data.user.name}`);
-        router.push(routes.board.home);
+      onSuccess: async (data) => {
+        try {
+          // Attendre un court instant pour s'assurer que tout est bien mis à jour
+          await new Promise(resolve => setTimeout(resolve, 200));
+          toast.success(`Bienvenue, ${data.user.name}`);
+          router.push(routes.board.home);
+        } catch (error) {
+          console.error("Erreur lors de la redirection:", error);
+          toast.error("Une erreur est survenue lors de la connexion.");
+        }
       },
       onError: (error) => {
         if (error instanceof AuthenticationError) {

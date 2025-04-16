@@ -21,7 +21,7 @@ export interface BetterAuthSession {
 export interface BetterAuthSessionResponse {
   user?: BetterAuthUser;
   session?: BetterAuthSession;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 export type UserRole = "USER" | "ADMIN" | "TEACHER" | "SUPERVISOR" | "DELEGATE";
