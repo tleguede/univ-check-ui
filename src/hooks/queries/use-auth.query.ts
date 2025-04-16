@@ -1,3 +1,4 @@
+import { authClient } from "@/lib/client";
 import { SignInInput } from "@/schema/sign-in.schema";
 import { AuthService } from "@/server/services/auth.service";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -7,6 +8,19 @@ export const authQueryKeys = {
   user: ["currentUser"],
   session: ["session"],
 };
+const SESSION_EXPIRY = 60 * 60 * 24 * 7;
+
+// Fonction utilitaire pour récupérer le token depuis les cookies
+function getTokenFromCookies(): string | null {
+  const cookies = document.cookie.split(';');
+  for (const cookie of cookies) {
+    const [name, value] = cookie.trim().split('=');
+    if (name === 'auth-token') {
+      return value;
+    }
+  }
+  return null;
+}
 
 export function useSignInMutation() {
   const queryClient = useQueryClient();
@@ -15,8 +29,8 @@ export function useSignInMutation() {
     mutationFn: (credentials: SignInInput) => AuthService.signIn(credentials),
     onSuccess: async (data) => {
       try {
-        // Stocker le token
-        localStorage.setItem("auth-token", data.token);
+        // Stocker le token uniquement dans les cookies
+        document.cookie = `auth-token=${data.token}; path=/; max-age=${SESSION_EXPIRY}; SameSite=Lax`;
         
         // Mettre à jour le cache avec les données initiales
         queryClient.setQueryData(authQueryKeys.user, data.user);
@@ -38,7 +52,7 @@ export function useSignInMutation() {
       } catch (error) {
         console.error("Erreur lors de la récupération des données de l'utilisateur:", error);
         // En cas d'erreur, nettoyer le token
-        localStorage.removeItem("auth-token");
+        document.cookie = 'auth-token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
         throw error;
       }
     },
@@ -51,7 +65,8 @@ export function useSignOutMutation() {
   return useMutation({
     mutationFn: () => AuthService.signOut(),
     onSuccess: () => {
-      localStorage.removeItem("auth-token");
+      // Supprimer le token des cookies
+      document.cookie = 'auth-token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
 
       queryClient.setQueryData(authQueryKeys.user, null);
       queryClient.invalidateQueries({ queryKey: authQueryKeys.user });
@@ -65,19 +80,24 @@ export function useCurrentUser() {
   useEffect(() => {
     // Fonction pour mettre à jour le token
     const updateToken = () => {
-      const storedToken = localStorage.getItem("auth-token");
+      const storedToken = getTokenFromCookies();
       setToken(storedToken);
     };
 
     // Mettre à jour le token initial
     updateToken();
 
-    // Écouter les changements dans le localStorage
-    window.addEventListener("storage", updateToken);
+    // Écouter les changements dans les cookies
+    const checkCookies = () => {
+      updateToken();
+    };
 
-    // Nettoyer l'écouteur d'événements
+    // Vérifier les cookies toutes les secondes
+    const interval = setInterval(checkCookies, 1000);
+
+    // Nettoyer l'intervalle
     return () => {
-      window.removeEventListener("storage", updateToken);
+      clearInterval(interval);
     };
   }, []);
 
@@ -89,14 +109,14 @@ export function useCurrentUser() {
         const user = await AuthService.getCurrentUser(token);
         if (!user) {
           // Si l'utilisateur n'est pas trouvé, supprimer le token
-          localStorage.removeItem("auth-token");
+          document.cookie = 'auth-token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
           setToken(null);
         }
         return user;
       } catch (error) {
         console.error("Erreur lors de la récupération de l'utilisateur:", error);
         // En cas d'erreur, supprimer le token
-        localStorage.removeItem("auth-token");
+        document.cookie = 'auth-token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
         setToken(null);
         return null;
       }
@@ -104,7 +124,6 @@ export function useCurrentUser() {
     enabled: !!token,
     staleTime: 1000 * 60 * 5,
     retry: 1,
-    // Ajouter des options pour s'assurer que les données sont toujours à jour
     refetchOnWindowFocus: true,
     refetchOnMount: true,
   });

@@ -9,4 +9,5 @@ export const AUTH_CONSTANTS = {
       password: "Prof123!",
     },
   },
+  SESSION_EXPIRY: 60 * 60 * 24 * 7
 };

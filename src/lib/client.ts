@@ -30,6 +30,7 @@ const betterAuthClient = createAuthClient({
   redirectToSignIn: true,
   usePrefixedPaths: false,
 });
+
 export const authClient = {
   ...betterAuthClient,
   signIn: {
