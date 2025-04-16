@@ -10,5 +10,6 @@ export const routes = {
     users: "board/users",
     profile: "board/profile",
     settings: "board/settings",
+    academicYears: "board/academic-years",
   },
 };
