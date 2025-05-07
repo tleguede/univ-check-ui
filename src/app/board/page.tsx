@@ -62,6 +62,10 @@ export default function Page() {
                 {user?.role === "ADMIN"
                   ? "Voici un aperçu du tableau de bord administrateur."
                   : "Voici un aperçu de vos contacts. Gérez ou créez-en de nouveaux facilement !"}
+
+                <h1 className="text-2xl font-semibold">
+                  {isLoading ? "Chargement..." : <>Bonjour, {user?.name || "Utilisateur"}!</>}
+                </h1>
               </p>
             </div>
             <Button className="px-3">Add Contact</Button>
