@@ -9,6 +9,8 @@ export class AuthenticationError extends Error {
   }
 }
 
+const SESSION_EXPIRY = 60 * 60 * 24 * 7;
+
 export class AuthService {
   static async signIn(credentials: SignInInput): Promise<AuthResponse> {
     try {
