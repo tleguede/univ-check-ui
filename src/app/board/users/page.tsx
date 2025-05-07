@@ -18,9 +18,9 @@ import { useUsersQuery } from "@/hooks/queries/use-user.query";
 import { User } from "@/types/user.types";
 import { RiScanLine, RiUserLine } from "@remixicon/react";
 import { useState } from "react";
-import { AddUserDialog } from "./components/add-user.dialog";
+import AddUserDialog from "./components/add-user.dialog";
 import { EditUserDialog } from "./components/edit-user.dialog";
-import { UsersTable } from "./components/users.table";
+import UsersTable from "./components/users.table";
 
 export default function UsersPage() {
   const [page, setPage] = useState(1);

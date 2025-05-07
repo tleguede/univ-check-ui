@@ -29,7 +29,7 @@ const userSchema = z.object({
 
 type UserFormInput = z.infer<typeof userSchema>;
 
-export function AddUserDialog({ onSuccess }: { onSuccess?: () => void }) {
+export default function AddUserDialog({ onSuccess }: { onSuccess?: () => void }) {
   const [open, setOpen] = useState(false);
 
   const form = useForm<UserFormInput>({
@@ -111,7 +111,7 @@ export function AddUserDialog({ onSuccess }: { onSuccess?: () => void }) {
                   <FormItem>
                     <FormLabel>Téléphone</FormLabel>
                     <FormControl>
-                      <Input placeholder="+237 612345678" {...field} />
+                      <Input placeholder="+228 90121221" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -139,7 +139,7 @@ export function AddUserDialog({ onSuccess }: { onSuccess?: () => void }) {
                       </SelectContent>
                     </Select>
                     <FormDescription className="text-xs">
-                      Le rôle détermine les permissions de l'utilisateur dans l'application
+                      Le rôle détermine les permissions de l&apos;utilisateur dans l&apos;application
                     </FormDescription>
                     <FormMessage />
                   </FormItem>
