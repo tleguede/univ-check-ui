@@ -12,27 +12,23 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import { useAcademicYearsQuery } from "@/hooks/queries/use-academic-year.query";
-import { useCurrentUser } from "@/hooks/queries/use-auth.query";
-import { RiCalendarLine, RiScanLine } from "@remixicon/react";
+import { useUsersQuery } from "@/hooks/queries/use-user.query";
+import { User } from "@/types/user.types";
+import { RiScanLine, RiUserLine } from "@remixicon/react";
 import { useState } from "react";
-import { AcademicYearsTable } from "./components/academic-years.table";
-import { AddAcademicYearDialog } from "./components/add-academic-year.dialog";
+import { AddUserDialog } from "./components/add-user.dialog";
+import { EditUserDialog } from "./components/edit-user.dialog";
+import { UsersTable } from "./components/users.table";
 
-export default function AcademicYearsPage() {
+export default function UsersPage() {
   const [page, setPage] = useState(1);
-  const [limit] = useState(10);
-  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-
-  const { data: user } = useCurrentUser();
-  const { data, isLoading } = useAcademicYearsQuery(page, limit);
-
-  const handlePageChange = (newPage: number) => {
-    setPage(newPage);
-  };
+  const [editingUser, setEditingUser] = useState<User | null>(null);
+  const { data, isLoading, refetch } = useUsersQuery(page, 10);
+  const users = data?.users || [];
+  const total = data?.total || 0;
+  const limit = data?.limit || 10;
 
   return (
     <SidebarProvider>
@@ -52,7 +48,7 @@ export default function AcademicYearsPage() {
                 </BreadcrumbItem>
                 <BreadcrumbSeparator className="hidden md:block" />
                 <BreadcrumbItem>
-                  <BreadcrumbPage>Années Académiques</BreadcrumbPage>
+                  <BreadcrumbPage>Utilisateurs</BreadcrumbPage>
                 </BreadcrumbItem>
               </BreadcrumbList>
             </Breadcrumb>
@@ -68,31 +64,33 @@ export default function AcademicYearsPage() {
           <div className="flex items-center justify-between gap-4">
             <div className="space-y-1">
               <h1 className="text-2xl font-semibold flex items-center gap-2">
-                <RiCalendarLine className="text-primary" />
-                Années Académiques
+                <RiUserLine className="text-primary" />
+                Utilisateurs
               </h1>
-              <p className="text-sm text-muted-foreground">Gérez les années académiques de votre institution.</p>
+              <p className="text-sm text-muted-foreground">Gérez les utilisateurs de votre institution.</p>
             </div>
-            {user?.user?.role === "ADMIN" && <Button onClick={() => setIsAddDialogOpen(true)}>Ajouter une année</Button>}
+            <AddUserDialog onSuccess={refetch} />
           </div>
-
-          {/* Table */}
-          <div className="flex-1 overflow-auto">
-            <AcademicYearsTable
-              academicYears={data?.academicYears || []}
-              isLoading={isLoading}
-              page={page}
-              limit={limit}
-              total={data?.total || 0}
-              onPageChange={handlePageChange}
-              isAdmin={user?.user?.role === "ADMIN"}
-            />
-          </div>
+          <UsersTable
+            users={users}
+            isLoading={isLoading}
+            page={page}
+            limit={limit}
+            total={total}
+            onPageChange={setPage}
+            onEdit={(user) => setEditingUser(user)}
+          />
         </div>
       </SidebarInset>
-
-      {/* Add Academic Year Dialog */}
-      <AddAcademicYearDialog isOpen={isAddDialogOpen} onOpenChange={setIsAddDialogOpen} />
+      <EditUserDialog
+        user={editingUser}
+        open={!!editingUser}
+        onOpenChange={(open) => !open && setEditingUser(null)}
+        onSuccess={() => {
+          setEditingUser(null);
+          refetch();
+        }}
+      />
     </SidebarProvider>
   );
 }
