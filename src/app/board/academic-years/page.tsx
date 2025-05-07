@@ -24,11 +24,11 @@ import { AddAcademicYearDialog } from "./components/add-academic-year.dialog";
 
 export default function AcademicYearsPage() {
   const [page, setPage] = useState(1);
-  const [limit, setLimit] = useState(10);
+  const [limit] = useState(10);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
 
-  const { data: user, isLoading: userLoading } = useCurrentUser();
-  const { data, isLoading, error } = useAcademicYearsQuery(page, limit);
+  const { data: user } = useCurrentUser();
+  const { data, isLoading } = useAcademicYearsQuery(page, limit);
 
   const handlePageChange = (newPage: number) => {
     setPage(newPage);
@@ -73,7 +73,7 @@ export default function AcademicYearsPage() {
               </h1>
               <p className="text-sm text-muted-foreground">Gérez les années académiques de votre institution.</p>
             </div>
-            {user?.role === "ADMIN" && <Button onClick={() => setIsAddDialogOpen(true)}>Ajouter une année</Button>}
+            {user?.user?.role === "ADMIN" && <Button onClick={() => setIsAddDialogOpen(true)}>Ajouter une année</Button>}
           </div>
 
           {/* Table */}
@@ -85,7 +85,7 @@ export default function AcademicYearsPage() {
               limit={limit}
               total={data?.total || 0}
               onPageChange={handlePageChange}
-              isAdmin={user?.role === "ADMIN"}
+              isAdmin={user?.user?.role === "ADMIN"}
             />
           </div>
         </div>
