@@ -12,3 +12,16 @@ export interface UserData {
     permissions?: string[];
   };
 }
+
+export interface User {
+  id?: string;
+  email: string;
+  name?: string;
+  phone?: string;
+  role?: UserRole;
+  createdAt?: string | Date;
+  updatedAt?: string | Date;
+  metadata?: {
+    permissions?: string[];
+  };
+}
