@@ -17,22 +17,21 @@ import { Separator } from "@/components/ui/separator";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { useAcademicYearsQuery } from "@/hooks/queries/use-academic-year.query";
 import { useCurrentUser } from "@/hooks/queries/use-auth.query";
+import { AcademicYear } from "@/types/academic-year.types";
 import { RiCalendarLine, RiScanLine } from "@remixicon/react";
 import { useState } from "react";
 import { AcademicYearsTable } from "./components/academic-years.table";
 import { AddAcademicYearDialog } from "./components/add-academic-year.dialog";
+import { EditAcademicYearDialog } from "./components/edit-academic-year.dialog";
 
 export default function AcademicYearsPage() {
-  const [page, setPage] = useState(1);
-  const [limit] = useState(10);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [editingYear, setEditingYear] = useState<AcademicYear | null>(null);
 
   const { data: user } = useCurrentUser();
-  const { data, isLoading } = useAcademicYearsQuery(page, limit);
+  const { data: academicYears, isLoading, refetch } = useAcademicYearsQuery();
 
-  const handlePageChange = (newPage: number) => {
-    setPage(newPage);
-  };
+  const isAdmin = user?.user?.role === "ADMIN";
 
   return (
     <SidebarProvider>
@@ -73,26 +72,31 @@ export default function AcademicYearsPage() {
               </h1>
               <p className="text-sm text-muted-foreground">Gérez les années académiques de votre institution.</p>
             </div>
-            {user?.user?.role === "ADMIN" && <Button onClick={() => setIsAddDialogOpen(true)}>Ajouter une année</Button>}
+            {isAdmin && <Button onClick={() => setIsAddDialogOpen(true)}>Ajouter une année</Button>}
           </div>
 
           {/* Table */}
           <div className="flex-1 overflow-auto">
             <AcademicYearsTable
-              academicYears={data?.academicYears || []}
+              academicYears={academicYears || []}
               isLoading={isLoading}
-              page={page}
-              limit={limit}
-              total={data?.total || 0}
-              onPageChange={handlePageChange}
-              isAdmin={user?.user?.role === "ADMIN"}
+              isAdmin={isAdmin}
+              onEdit={(year) => setEditingYear(year)}
+              onDelete={() => refetch()}
             />
           </div>
         </div>
       </SidebarInset>
 
       {/* Add Academic Year Dialog */}
-      <AddAcademicYearDialog isOpen={isAddDialogOpen} onOpenChange={setIsAddDialogOpen} />
+      <AddAcademicYearDialog isOpen={isAddDialogOpen} onOpenChange={setIsAddDialogOpen} onSuccess={() => refetch()} />
+
+      {/* Edit Academic Year Dialog */}
+      <EditAcademicYearDialog
+        isOpen={!!editingYear}
+        onOpenChange={(open) => !open && setEditingYear(null)}
+        academicYear={editingYear}
+      />
     </SidebarProvider>
   );
 }
