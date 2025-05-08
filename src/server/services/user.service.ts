@@ -1,21 +1,6 @@
 import { User, UserCreateInput, UserUpdateInput } from "@/types/user.types";
+import { getAuthToken } from "@/utils/auth-utils";
 import api from "@/utils/axios";
-
-// Fonction utilitaire pour récupérer le token de manière plus sécurisée
-function getAuthToken() {
-  if (typeof window === "undefined") return null; // Vérification côté serveur
-
-  try {
-    const authData = localStorage.getItem("auth-user");
-    if (!authData) return null;
-
-    const parsedData = JSON.parse(authData);
-    return parsedData?.token || null;
-  } catch (error) {
-    console.error("Erreur lors de la récupération du token:", error);
-    return null;
-  }
-}
 
 export class UserService {
   static async getUsers(): Promise<User[]> {
