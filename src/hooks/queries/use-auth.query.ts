@@ -1,6 +1,7 @@
-import { authClient } from "@/lib/client";
 import { SignInInput } from "@/schema/sign-in.schema";
 import { AuthService } from "@/server/services/auth.service";
+import { AuthResponse } from "@/types/auth.types";
+import { setCookie } from "@/utils/cookies";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 
@@ -8,19 +9,6 @@ export const authQueryKeys = {
   user: ["currentUser"],
   session: ["session"],
 };
-const SESSION_EXPIRY = 60 * 60 * 24 * 7;
-
-// Fonction utilitaire pour récupérer le token depuis les cookies
-function getTokenFromCookies(): string | null {
-  const cookies = document.cookie.split(';');
-  for (const cookie of cookies) {
-    const [name, value] = cookie.trim().split('=');
-    if (name === 'auth-token') {
-      return value;
-    }
-  }
-  return null;
-}
 
 export function useSignInMutation() {
   const queryClient = useQueryClient();
@@ -29,30 +17,18 @@ export function useSignInMutation() {
     mutationFn: (credentials: SignInInput) => AuthService.signIn(credentials),
     onSuccess: async (data) => {
       try {
-        // Stocker le token uniquement dans les cookies
-        document.cookie = `auth-token=${data.token}; path=/; max-age=${SESSION_EXPIRY}; SameSite=Lax`;
-        
-        // Mettre à jour le cache avec les données initiales
-        queryClient.setQueryData(authQueryKeys.user, data.user);
-        
-        // Attendre un court instant pour s'assurer que le token est bien stocké
-        await new Promise(resolve => setTimeout(resolve, 100));
-        
-        // Récupérer les données complètes de l'utilisateur
-        const userData = await AuthService.getCurrentUser(data.token);
-        if (userData) {
-          // Mettre à jour le cache avec les données complètes
-          queryClient.setQueryData(authQueryKeys.user, userData);
-          // Forcer l'invalidation du cache pour s'assurer que les composants se mettent à jour
-          await queryClient.invalidateQueries({ 
-            queryKey: authQueryKeys.user,
-            refetchType: 'active'
-          });
+        // Stocker toutes les infos utilisateur + token dans localStorage
+        localStorage.setItem("auth-user", JSON.stringify(data));
+
+        // Également définir un cookie pour le token (pour le middleware)
+        if (data.token) {
+          setCookie("auth-token", data.token, 7); // Cookie valide pour 7 jours
         }
+
+        // Mettre à jour le cache React Query
+        queryClient.setQueryData(authQueryKeys.user, data);
       } catch (error) {
-        console.error("Erreur lors de la récupération des données de l'utilisateur:", error);
-        // En cas d'erreur, nettoyer le token
-        document.cookie = 'auth-token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+        localStorage.removeItem("auth-user");
         throw error;
       }
     },
@@ -65,9 +41,9 @@ export function useSignOutMutation() {
   return useMutation({
     mutationFn: () => AuthService.signOut(),
     onSuccess: () => {
-      // Supprimer le token des cookies
-      document.cookie = 'auth-token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
-
+      localStorage.removeItem("auth-user");
+      // Supprimer le cookie d'authentification
+      setCookie("auth-token", "", -1);
       queryClient.setQueryData(authQueryKeys.user, null);
       queryClient.invalidateQueries({ queryKey: authQueryKeys.user });
     },
@@ -75,56 +51,33 @@ export function useSignOutMutation() {
 }
 
 export function useCurrentUser() {
-  const [token, setToken] = useState<string | null>(null);
+  const [user, setUser] = useState<AuthResponse | null>(null);
 
   useEffect(() => {
-    // Fonction pour mettre à jour le token
-    const updateToken = () => {
-      const storedToken = getTokenFromCookies();
-      setToken(storedToken);
+    const updateUser = () => {
+      const stored = localStorage.getItem("auth-user");
+      if (stored) {
+        try {
+          setUser(JSON.parse(stored));
+        } catch {
+          setUser(null);
+        }
+      } else {
+        setUser(null);
+      }
     };
-
-    // Mettre à jour le token initial
-    updateToken();
-
-    // Écouter les changements dans les cookies
-    const checkCookies = () => {
-      updateToken();
-    };
-
-    // Vérifier les cookies toutes les secondes
-    const interval = setInterval(checkCookies, 1000);
-
-    // Nettoyer l'intervalle
-    return () => {
-      clearInterval(interval);
-    };
+    updateUser();
+    window.addEventListener("storage", updateUser);
+    return () => window.removeEventListener("storage", updateUser);
   }, []);
 
   return useQuery({
     queryKey: authQueryKeys.user,
-    queryFn: async () => {
-      if (!token) return null;
-      try {
-        const user = await AuthService.getCurrentUser(token);
-        if (!user) {
-          // Si l'utilisateur n'est pas trouvé, supprimer le token
-          document.cookie = 'auth-token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
-          setToken(null);
-        }
-        return user;
-      } catch (error) {
-        console.error("Erreur lors de la récupération de l'utilisateur:", error);
-        // En cas d'erreur, supprimer le token
-        document.cookie = 'auth-token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
-        setToken(null);
-        return null;
-      }
-    },
-    enabled: !!token,
-    staleTime: 1000 * 60 * 5,
-    retry: 1,
-    refetchOnWindowFocus: true,
-    refetchOnMount: true,
+    queryFn: async () => user,
+    enabled: true,
+    staleTime: 1000 * 60 * 60,
+    retry: false,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
   });
 }
