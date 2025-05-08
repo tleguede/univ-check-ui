@@ -1,8 +1,6 @@
-import { AUTH_CONSTANTS } from "@/config/constants";
-import { authClient } from "@/lib/client";
 import { SignInInput } from "@/schema/sign-in.schema";
-import { AuthResponse, UserRole } from "@/types/auth.types";
-import { UserData } from "@/types/user.types";
+import { AuthResponse } from "@/types/auth.types";
+import api from "@/utils/axios";
 
 export class AuthenticationError extends Error {
   constructor(message: string = "Identifiants incorrects") {
@@ -16,137 +14,66 @@ const SESSION_EXPIRY = 60 * 60 * 24 * 7;
 export class AuthService {
   static async signIn(credentials: SignInInput): Promise<AuthResponse> {
     try {
-      const { data, error } = await authClient.signIn.email({
-        email: credentials.email,
-        password: credentials.password,
-      });
-
-      if (error) {
-        throw new AuthenticationError(error.message);
-      }
-
-      if (!data) {
+      const response = await api.post("/api/v1/auth/signin", credentials);
+      const data = response.data;
+      if (!data || !data.token || !data.email) {
         throw new AuthenticationError("Aucune donnée reçue du serveur");
       }
-
-      // Check if user data is directly in the response or in a user property
-      let userData: UserData;
-      if ("user" in data && data.user && "email" in data.user) {
-        // User data is nested in a user property
-        userData = data.user as UserData;
-      } else if ("email" in data) {
-        // User data is at the top level
-        userData = data as unknown as UserData;
-      } else {
-        console.error("Structure de données utilisateur invalide:", data);
-        throw new AuthenticationError("Structure de données utilisateur invalide");
-      }
-
-      // Use the role directly from the response
       return {
         user: {
-          id: userData.id || "unknown-id",
-          email: userData.email,
-          name: userData.name || "Utilisateur",
-          phone: userData.phone || "Non spécifié",
-          role: userData.role || "USER",
-          createdAt: userData.createdAt
-            ? typeof userData.createdAt === "string"
-              ? userData.createdAt
-              : userData.createdAt.toISOString()
+          id: data.id || "unknown-id",
+          email: data.email,
+          name: data.name || "Utilisateur",
+          phone: data.phone || "Non spécifié",
+          role: data.role || "USER",
+          createdAt: data.createdAt
+            ? typeof data.createdAt === "string"
+              ? data.createdAt
+              : new Date(data.createdAt).toISOString()
             : new Date().toISOString(),
-          updatedAt: userData.updatedAt
-            ? typeof userData.updatedAt === "string"
-              ? userData.updatedAt
-              : userData.updatedAt.toISOString()
+          updatedAt: data.updatedAt
+            ? typeof data.updatedAt === "string"
+              ? data.updatedAt
+              : new Date(data.updatedAt).toISOString()
             : undefined,
         },
-        token: data.token || "",
+        token: data.token,
       };
-    } catch (error) {
+    } catch (error: unknown) {
       console.error("Login failed:", error);
-      throw new AuthenticationError("Identifiants invalides ou erreur du serveur.");
+      const errorResponse = error as { response?: { data?: { message?: string } } };
+      throw new AuthenticationError(errorResponse?.response?.data?.message || "Identifiants invalides ou erreur du serveur.");
     }
   }
 
   static async signOut(): Promise<{ success: boolean }> {
-    try {
-      const { error } = await authClient.signOut({});
-
-      if (error) {
-        throw new Error(error.message);
-      }
-
-      return { success: true };
-    } catch (error) {
-      console.error("Logout failed:", error);
-      return { success: false };
-    }
+    // Si le backend ne gère pas la session côté serveur, il suffit de supprimer le token côté client
+    return { success: true };
   }
 
   static async getCurrentUser(token: string): Promise<AuthResponse["user"] | null> {
     try {
-      if (!token) {
-        console.error("Aucun token d'authentification fourni");
-        return null;
-      }
-
-      const { data, error } = await authClient.getSession({
-        fetchOptions: {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        }
+      if (!token) return null;
+      const response = await api.get("/api/v1/auth/me", {
+        headers: { Authorization: `Bearer ${token}` },
       });
-
-      if (error || !data) {
-        console.error("Erreur lors de la récupération de la session:", error);
-        return null;
-      }
-
-      // Si nous avons déjà les données de l'utilisateur dans la réponse, les utiliser
-      if (data.user && data.user.email) {
-        return data.user;
-      }
-
-      // Sinon, essayer de récupérer les données de l'utilisateur
-      const userResponse = await authClient.getUser({
-        fetchOptions: {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        }
-      });
-
-      if (userResponse.error || !userResponse.data) {
-        console.error("Erreur lors de la récupération des données de l'utilisateur:", userResponse.error);
-        return null;
-      }
-
-      const userData = userResponse.data;
-
-      if (!userData || !userData.email) {
-        console.error("Structure de données utilisateur invalide dans getCurrentUser:", userData);
-        return null;
-      }
-
-      const role = this.determineUserRole(userData.email, userData);
-
+      const userData = response.data;
+      if (!userData || !userData.email) return null;
       return {
         id: userData.id || "unknown-id",
         email: userData.email,
         name: userData.name || "Utilisateur",
         phone: userData.phone || "Non spécifié",
-        role,
+        role: userData.role || "USER",
         createdAt: userData.createdAt
           ? typeof userData.createdAt === "string"
             ? userData.createdAt
-            : userData.createdAt.toISOString()
+            : new Date(userData.createdAt).toISOString()
           : new Date().toISOString(),
         updatedAt: userData.updatedAt
           ? typeof userData.updatedAt === "string"
             ? userData.updatedAt
-            : userData.updatedAt.toISOString()
+            : new Date(userData.updatedAt).toISOString()
           : undefined,
       };
     } catch (error) {
@@ -157,65 +84,20 @@ export class AuthService {
 
   static async forgotPassword(email: string): Promise<{ success: boolean; error?: string }> {
     try {
-      const { error } = await authClient.forgetPassword({
-        email,
-      });
-
-      if (error) {
-        return { success: false, error: error.message };
-      }
-
+      await api.post("/api/v1/auth/forgot-password", { email });
       return { success: true };
-    } catch (error) {
-      console.error("Forgot password failed:", error);
-      return { success: false, error: "Une erreur s'est produite lors de la demande de réinitialisation du mot de passe." };
+    } catch (error: unknown) {
+      const apiError = error as { response?: { data?: { message?: string } } };
+      return { success: false, error: apiError?.response?.data?.message || "Erreur lors de la demande." };
     }
   }
-
   static async resetPassword(token: string, newPassword: string): Promise<{ success: boolean; error?: string }> {
     try {
-      const { error } = await authClient.resetPassword({
-        token,
-        newPassword,
-      });
-
-      if (error) {
-        return { success: false, error: error.message };
-      }
-
+      await api.post("/api/v1/auth/reset-password", { token, newPassword });
       return { success: true };
-    } catch (error) {
-      console.error("Reset password failed:", error);
-      return { success: false, error: "Une erreur s'est produite lors de la réinitialisation du mot de passe." };
-    }
-  }
-
-  private static determineUserRole(email: string, userData?: UserData): UserRole {
-    if (userData?.role) {
-      const roleFromUserdata = userData.role.toUpperCase();
-      if (["ADMIN", "TEACHER", "SUPERVISOR", "DELEGATE", "USER"].includes(roleFromUserdata)) {
-        return roleFromUserdata as UserRole;
-      }
-    }
-
-    if (userData?.metadata?.permissions) {
-      const permissions = userData.metadata.permissions;
-      if (permissions.includes("admin:all")) return "ADMIN";
-      if (permissions.includes("teacher:manage")) return "TEACHER";
-      if (permissions.includes("supervisor:manage")) return "SUPERVISOR";
-      if (permissions.includes("delegate:represent")) return "DELEGATE";
-    }
-
-    if (email === AUTH_CONSTANTS.DEMO_CREDENTIALS.ADMIN.email) {
-      return "ADMIN";
-    } else if (email.includes("professeur") || email.includes("teacher")) {
-      return "TEACHER";
-    } else if (email.includes("supervisor")) {
-      return "SUPERVISOR";
-    } else if (email.includes("delegate")) {
-      return "DELEGATE";
-    } else {
-      return "USER";
+    } catch (error: unknown) {
+      const apiError = error as { response?: { data?: { message?: string } } };
+      return { success: false, error: apiError?.response?.data?.message || "Erreur lors de la réinitialisation." };
     }
   }
 }

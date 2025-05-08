@@ -57,9 +57,11 @@ export default function Page() {
           {/* Page intro */}
           <div className="flex items-center justify-between gap-4">
             <div className="space-y-1">
-              <h1 className="text-2xl font-semibold">{isLoading ? "Chargement..." : <>Bonjour, {user?.name || "Utilisateur"}!</>}</h1>
+              <h1 className="text-2xl font-semibold">
+                {isLoading ? "Chargement..." : <>Bonjour, {user?.user?.name || "Utilisateur"}!</>}
+              </h1>
               <p className="text-sm text-muted-foreground">
-                {user?.role === "ADMIN"
+                {user?.user?.role === "ADMIN"
                   ? "Voici un aperçu du tableau de bord administrateur."
                   : "Voici un aperçu de vos contacts. Gérez ou créez-en de nouveaux facilement !"}
               </p>
