@@ -79,6 +79,7 @@ export default function UsersPage() {
             total={total}
             onPageChange={setPage}
             onEdit={(user) => setEditingUser(user)}
+            onDelete={() => refetch()}
           />
         </div>
       </SidebarInset>

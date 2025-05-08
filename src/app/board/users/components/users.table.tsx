@@ -65,6 +65,7 @@ interface UsersTableProps {
   total: number;
   onPageChange: (page: number) => void;
   onEdit: (user: User) => void;
+  onDelete: (user: User) => void;
 }
 
 const roleFilterFn: FilterFn<User> = (row, columnId, filterValue: string[]) => {
@@ -197,7 +198,7 @@ export default function UsersTable({ users, isLoading, page, limit, total, onPag
     enableSortingRemoval: false,
     onPaginationChange: setPagination,
     onColumnFiltersChange: setColumnFilters,
-    getRowId: (row) => row.id,
+    getRowId: (row, index) => row.id ?? `row-${index}`,
   });
 
   // Variables calculées
@@ -241,12 +242,6 @@ export default function UsersTable({ users, isLoading, page, limit, total, onPag
     // la suppression est gérée dans le composant RowActions
   };
 
-  const handleDeleteSelected = () => {
-    const selectedRows = table.getSelectedRowModel().rows;
-    if (!selectedRows.length) return;
-    // La suppression sera gérée par le dialogue de confirmation
-  };
-
   if (isLoading) {
     return (
       <div className="space-y-4">
@@ -259,7 +254,7 @@ export default function UsersTable({ users, isLoading, page, limit, total, onPag
                   style={{ width: `${column.size}px` }}
                   className="relative h-9 select-none bg-sidebar border-y border-border first:border-l first:rounded-l-lg last:border-r last:rounded-r-lg"
                 >
-                  {column.header}
+                  {typeof column.header === "string" ? column.header : column.id || ""}
                 </TableHead>
               ))}
             </TableRow>
@@ -517,11 +512,18 @@ function RowActions({
 }) {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [isUpdatePending, startUpdateTransition] = useTransition();
+  const { mutate: deleteUser } = useDeleteUserMutation();
 
   const handleDelete = () => {
     if (user.id) {
-      onDelete(user.id);
-      setShowDeleteDialog(false);
+      startUpdateTransition(() => {
+        deleteUser(user.id!, {
+          onSuccess: () => {
+            onDelete(user.id!);
+            setShowDeleteDialog(false);
+          },
+        });
+      });
     }
   };
 

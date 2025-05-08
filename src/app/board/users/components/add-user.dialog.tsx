@@ -13,6 +13,8 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useCreateUserMutation } from "@/hooks/queries/use-user.query";
+import { UserRole } from "@/types/auth.types";
+import { UserCreateInput } from "@/types/user.types";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { RiUserAddLine } from "@remixicon/react";
 import { useState } from "react";
@@ -25,6 +27,7 @@ const userSchema = z.object({
   email: z.string().email("Email invalide"),
   phone: z.string().optional(),
   role: z.string().min(1, "Rôle requis"),
+  password: z.string().min(6, "Le mot de passe doit contenir au moins 6 caractères"),
 });
 
 type UserFormInput = z.infer<typeof userSchema>;
@@ -39,13 +42,23 @@ export default function AddUserDialog({ onSuccess }: { onSuccess?: () => void })
       email: "",
       phone: "",
       role: "USER",
+      password: "",
     },
   });
 
   const { mutate: createUser, isPending } = useCreateUserMutation();
 
   const onSubmit = (values: UserFormInput) => {
-    createUser(values, {
+    // Convertir les valeurs du formulaire au format attendu par UserCreateInput
+    const userInput: UserCreateInput = {
+      name: values.name,
+      email: values.email,
+      phone: values.phone,
+      role: values.role as UserRole,
+      password: values.password,
+    };
+
+    createUser(userInput, {
       onSuccess: () => {
         toast.success("Utilisateur créé avec succès");
         setOpen(false);
@@ -141,6 +154,21 @@ export default function AddUserDialog({ onSuccess }: { onSuccess?: () => void })
                     <FormDescription className="text-xs">
                       Le rôle détermine les permissions de l&apos;utilisateur dans l&apos;application
                     </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Mot de passe</FormLabel>
+                    <FormControl>
+                      <Input type="password" placeholder="••••••" {...field} />
+                    </FormControl>
+                    <FormDescription className="text-xs">Minimum 6 caractères</FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
