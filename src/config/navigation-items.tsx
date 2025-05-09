@@ -1,12 +1,13 @@
 import { IconType } from "react-icons";
 import {
+  PiBookmarkDuotone,
+  PiBuildingDuotone,
+  PiBuildingsDuotone,
   PiCalendarDuotone,
   PiCheckSquareDuotone,
-  PiEnvelopeOpenDuotone,
   PiGearDuotone,
   PiHouseDuotone,
   PiUserDuotone,
-  PiBookmarkDuotone,
 } from "react-icons/pi";
 import { routes } from "./routes";
 
