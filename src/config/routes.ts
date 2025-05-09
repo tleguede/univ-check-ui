@@ -7,9 +7,10 @@ export const routes = {
   },
   board: {
     home: "/board",
-    users: "board/users",
-    profile: "board/profile",
-    settings: "board/settings",
-    academicYears: "board/academic-years",
+    users: "/board/users",
+    profile: "/board/profile",
+    settings: "/board/settings",
+    academicYears: "/board/academic-years",
+    organizations: "/board/organizations",
   },
 };
