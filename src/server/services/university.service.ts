@@ -51,7 +51,7 @@ export class UniversityService {
             }
 
             const { organization, responsable, ...rest } = input;
-            const result = { ...rest, organizationId: organization, responsableId: responsable, }
+            const result = { ...rest, organisationId: organization, responsableId: responsable, }
 
             const { data } = await api.post("/api/v1/universities", result, {
                 headers: {
@@ -74,8 +74,8 @@ export class UniversityService {
             }
 
             const { id, organization, responsable, ...rest } = input;
-            const result = { ...rest, organizationId: organization, responsableId: responsable, }
-            
+            const result = { ...rest, organisationId: organization, responsableId: responsable, }
+
             const { data } = await api.put(`/api/v1/universities/${id}`, result, {
                 headers: {
                     Authorization: `Bearer ${token}`,

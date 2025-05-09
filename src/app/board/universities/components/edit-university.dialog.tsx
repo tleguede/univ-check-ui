@@ -142,7 +142,7 @@ export function EditUniversityDialog({
                     </FormControl>
                     <SelectContent>
                       {users?.users?.map((user) => (
-                        <SelectItem key={user.id} value={user.email}>
+                        <SelectItem key={user.id} value={user.id||""}>
                           {user.name}
                         </SelectItem>
                       ))}
