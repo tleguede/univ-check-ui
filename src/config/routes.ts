@@ -12,5 +12,6 @@ export const routes = {
     settings: "/board/settings",
     academicYears: "/board/academic-years",
     organizations: "/board/organizations",
+    universities: "/board/universities",
   },
 };
