@@ -12,6 +12,8 @@ export const routes = {
     settings: "/board/settings",
     academicYears: "/board/academic-years",
     organizations: "/board/organizations",
-    attendance: "/board/attendance", // Ajout de la route d'émargement
+    attendance: "/board/attendance", 
+    programs: "/board/programs",
+    universities: "/board/universities",
   },
 };
