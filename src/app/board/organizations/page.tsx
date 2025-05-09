@@ -16,16 +16,13 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { useCurrentUser } from "@/hooks/queries/use-auth.query";
-import { RiScanLine } from "@remixicon/react";
 import { PiBuildingsDuotone } from "react-icons/pi";
-import { useState } from "react";
 import { EditOrganizationDialog } from "./components/edit-organizations.dialog";
 import { useOrganizationsQuery } from "@/hooks/queries/use-organizations.query";
 import { Organization } from "@/types/organization.types";
-import { RiCalendarLine, RiScanLine } from "@remixicon/react";
+import { RiScanLine } from "@remixicon/react";
 import { useState } from "react";
 import { AddOrganizationDialog } from "./components/add-organization.dialog";
-import { EditOrganizationDialog } from "./components/edit-organizations.dialog";
 import { OrganizationsTable } from "./components/organizations.table";
 
 export default function AcademicYearsPage() {
