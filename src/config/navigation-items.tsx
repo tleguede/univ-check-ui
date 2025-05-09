@@ -1,4 +1,5 @@
 import { IconType } from "react-icons";
+import { PiBookmarkDuotone, PiCalendarDuotone, PiEnvelopeOpenDuotone, PiGearDuotone, PiHouseDuotone, PiUserDuotone } from "react-icons/pi";
 import { PiBuildingDuotone, PiBuildingsDuotone, PiCalendarDuotone, PiGearDuotone, PiHouseDuotone, PiUserDuotone } from "react-icons/pi";
 import { routes } from "./routes";
 
@@ -60,6 +61,11 @@ export const mainSections: NavMenuGroup[] = [
         title: "Universités",
         url: routes.board.universities,
         icon: PiBuildingDuotone,
+      },
+      {
+        title: "Programmes",
+        url: routes.board.programs,
+        icon: PiBookmarkDuotone,
       },
       {
         title: "Utilisateurs",
