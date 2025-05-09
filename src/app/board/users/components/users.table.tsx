@@ -1,9 +1,4 @@
 "use client";
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Pagination, PaginationContent, PaginationItem, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -15,8 +10,9 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -25,20 +21,25 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Pagination, PaginationContent, PaginationItem } from "@/components/ui/pagination";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useDeleteUserMutation } from "@/hooks/queries/use-user.query";
-import { User, UserRole } from "@/types/user.types";
-import { 
-  RiDeleteBinLine, 
-  RiEdit2Line, 
-  RiSearch2Line, 
+import { cn } from "@/lib/utils";
+import { UserRole } from "@/types/auth.types";
+import { User } from "@/types/user.types";
+import {
+  RiArrowDownSLine,
+  RiArrowUpSLine,
+  RiCheckLine,
   RiCloseCircleLine,
+  RiDeleteBinLine,
+  RiErrorWarningLine,
   RiFilter3Line,
   RiMoreLine,
-  RiErrorWarningLine,
-  RiArrowUpSLine,
-  RiArrowDownSLine,
-  RiCheckLine
+  RiSearch2Line,
 } from "@remixicon/react";
 import {
   ColumnDef,
@@ -54,7 +55,6 @@ import {
   SortingState,
   useReactTable,
 } from "@tanstack/react-table";
-import { cn } from "@/lib/utils";
 import { useId, useMemo, useRef, useState, useTransition } from "react";
 
 interface UsersTableProps {
@@ -65,6 +65,7 @@ interface UsersTableProps {
   total: number;
   onPageChange: (page: number) => void;
   onEdit: (user: User) => void;
+  onDelete: (user: User) => void;
 }
 
 const roleFilterFn: FilterFn<User> = (row, columnId, filterValue: string[]) => {
@@ -73,14 +74,16 @@ const roleFilterFn: FilterFn<User> = (row, columnId, filterValue: string[]) => {
   return filterValue.includes(role);
 };
 
-export function UsersTable({ users, isLoading, page, limit, total, onPageChange, onEdit }: UsersTableProps) {
+export default function UsersTable({ users, isLoading, page, limit, total, onPageChange, onEdit }: UsersTableProps) {
   const id = useId();
   const { mutate: deleteUser } = useDeleteUserMutation();
   const [deletingId, setDeletingId] = useState<string | null>(null);
-  const [sorting, setSorting] = useState<SortingState>([{
-    id: "name",
-    desc: false,
-  }]);
+  const [sorting, setSorting] = useState<SortingState>([
+    {
+      id: "name",
+      desc: false,
+    },
+  ]);
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: page - 1,
     pageSize: limit,
@@ -101,10 +104,10 @@ export function UsersTable({ users, isLoading, page, limit, total, onPageChange,
           />
         ),
         cell: ({ row }) => (
-          <Checkbox 
-            checked={row.getIsSelected()} 
-            onCheckedChange={(value) => row.toggleSelected(!!value)} 
-            aria-label="Sélectionner la ligne" 
+          <Checkbox
+            checked={row.getIsSelected()}
+            onCheckedChange={(value) => row.toggleSelected(!!value)}
+            aria-label="Sélectionner la ligne"
           />
         ),
         size: 28,
@@ -114,9 +117,7 @@ export function UsersTable({ users, isLoading, page, limit, total, onPageChange,
       {
         accessorKey: "name",
         header: "Nom",
-        cell: (info) => (
-          <div className="font-medium">{info.getValue() as string}</div>
-        ),
+        cell: (info) => <div className="font-medium">{info.getValue() as string}</div>,
         size: 180,
         enableHiding: false,
       },
@@ -141,14 +142,9 @@ export function UsersTable({ users, isLoading, page, limit, total, onPageChange,
             <div className="flex items-center h-full">
               <Badge
                 variant="outline"
-                className={cn(
-                  "gap-1 py-0.5 px-2 text-sm",
-                  role === "ADMIN" ? "text-primary-foreground" : "text-muted-foreground"
-                )}
+                className={cn("gap-1 py-0.5 px-2 text-sm", role === "ADMIN" ? "text-primary-foreground" : "text-muted-foreground")}
               >
-                {role === "ADMIN" && (
-                  <RiCheckLine className="text-emerald-500" size={14} aria-hidden="true" />
-                )}
+                {role === "ADMIN" && <RiCheckLine className="text-emerald-500" size={14} aria-hidden="true" />}
                 {role}
               </Badge>
             </div>
@@ -170,7 +166,14 @@ export function UsersTable({ users, isLoading, page, limit, total, onPageChange,
       {
         id: "actions",
         header: () => <span className="sr-only">Actions</span>,
-        cell: ({ row }) => <RowActions user={row.original} onEdit={onEdit} onDelete={(id) => handleDelete(id)} isDeleting={deletingId === row.original.id} />,
+        cell: ({ row }) => (
+          <RowActions
+            user={row.original}
+            onEdit={onEdit}
+            onDelete={(id) => handleDelete(id)}
+            isDeleting={deletingId === row.original.id}
+          />
+        ),
         size: 60,
         enableHiding: false,
       },
@@ -195,7 +198,7 @@ export function UsersTable({ users, isLoading, page, limit, total, onPageChange,
     enableSortingRemoval: false,
     onPaginationChange: setPagination,
     onColumnFiltersChange: setColumnFilters,
-    getRowId: (row) => row.id,
+    getRowId: (row, index) => row.id ?? `row-${index}`,
   });
 
   // Variables calculées
@@ -239,12 +242,6 @@ export function UsersTable({ users, isLoading, page, limit, total, onPageChange,
     // la suppression est gérée dans le composant RowActions
   };
 
-  const handleDeleteSelected = () => {
-    const selectedRows = table.getSelectedRowModel().rows;
-    if (!selectedRows.length) return;
-    // La suppression sera gérée par le dialogue de confirmation
-  };
-
   if (isLoading) {
     return (
       <div className="space-y-4">
@@ -252,12 +249,12 @@ export function UsersTable({ users, isLoading, page, limit, total, onPageChange,
           <TableHeader>
             <TableRow className="hover:bg-transparent">
               {columns.map((column, i) => (
-                <TableHead 
+                <TableHead
                   key={i}
                   style={{ width: `${column.size}px` }}
                   className="relative h-9 select-none bg-sidebar border-y border-border first:border-l first:rounded-l-lg last:border-r last:rounded-r-lg"
                 >
-                  {column.header}
+                  {typeof column.header === "string" ? column.header : column.id || ""}
                 </TableHead>
               ))}
             </TableRow>
@@ -331,22 +328,26 @@ export function UsersTable({ users, isLoading, page, limit, total, onPageChange,
               </AlertDialogTrigger>
               <AlertDialogContent>
                 <div className="flex flex-col gap-2 max-sm:items-center sm:flex-row sm:gap-4">
-                  <div className="flex size-9 shrink-0 items-center justify-center rounded-full border border-border" aria-hidden="true">
+                  <div
+                    className="flex size-9 shrink-0 items-center justify-center rounded-full border border-border"
+                    aria-hidden="true"
+                  >
                     <RiErrorWarningLine className="opacity-80" size={16} />
                   </div>
                   <AlertDialogHeader>
                     <AlertDialogTitle>Êtes-vous vraiment sûr ?</AlertDialogTitle>
                     <AlertDialogDescription>
-                      Cette action est irréversible. Cela va supprimer définitivement {table.getSelectedRowModel().rows.length} utilisateur(s) sélectionné(s).
+                      Cette action est irréversible. Cela va supprimer définitivement {table.getSelectedRowModel().rows.length}{" "}
+                      utilisateur(s) sélectionné(s).
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                 </div>
                 <AlertDialogFooter>
                   <AlertDialogCancel>Annuler</AlertDialogCancel>
-                  <AlertDialogAction 
+                  <AlertDialogAction
                     onClick={() => {
                       const selectedRows = table.getSelectedRowModel().rows;
-                      selectedRows.forEach(row => {
+                      selectedRows.forEach((row) => {
                         const userId = row.original.id;
                         if (userId) deleteUser(userId);
                       });
@@ -375,9 +376,7 @@ export function UsersTable({ users, isLoading, page, limit, total, onPageChange,
             </PopoverTrigger>
             <PopoverContent className="w-auto min-w-36 p-3" align="end">
               <div className="space-y-3">
-                <div className="text-xs font-medium uppercase text-muted-foreground/60">
-                  Rôle
-                </div>
+                <div className="text-xs font-medium uppercase text-muted-foreground/60">Rôle</div>
                 <div className="space-y-3">
                   {uniqueRoleValues.map((value, i) => (
                     <div key={value} className="flex items-center gap-2">
@@ -387,10 +386,7 @@ export function UsersTable({ users, isLoading, page, limit, total, onPageChange,
                         onCheckedChange={(checked: boolean) => handleRoleChange(checked, value)}
                       />
                       <Label htmlFor={`${id}-${i}`} className="flex grow justify-between gap-2 font-normal">
-                        {value}{" "}
-                        <span className="ms-2 text-xs text-muted-foreground">
-                          {roleCounts.get(value)}
-                        </span>
+                        {value} <span className="ms-2 text-xs text-muted-foreground">{roleCounts.get(value)}</span>
                       </Label>
                     </div>
                   ))}
@@ -414,9 +410,7 @@ export function UsersTable({ users, isLoading, page, limit, total, onPageChange,
                 >
                   {header.isPlaceholder ? null : header.column.getCanSort() ? (
                     <div
-                      className={cn(
-                        header.column.getCanSort() && "flex h-full cursor-pointer select-none items-center gap-2"
-                      )}
+                      className={cn(header.column.getCanSort() && "flex h-full cursor-pointer select-none items-center gap-2")}
                       onClick={header.column.getToggleSortingHandler()}
                       onKeyDown={(e) => {
                         if (header.column.getCanSort() && (e.key === "Enter" || e.key === " ")) {
@@ -429,7 +423,7 @@ export function UsersTable({ users, isLoading, page, limit, total, onPageChange,
                       {flexRender(header.column.columnDef.header, header.getContext())}
                       {{
                         asc: <RiArrowUpSLine className="shrink-0 opacity-60" size={16} aria-hidden="true" />,
-                        desc: <RiArrowDownSLine className="shrink-0 opacity-60" size={16} aria-hidden="true" />
+                        desc: <RiArrowDownSLine className="shrink-0 opacity-60" size={16} aria-hidden="true" />,
                       }[header.column.getIsSorted() as string] ?? null}
                     </div>
                   ) : (
@@ -518,11 +512,18 @@ function RowActions({
 }) {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [isUpdatePending, startUpdateTransition] = useTransition();
-  
+  const { mutate: deleteUser } = useDeleteUserMutation();
+
   const handleDelete = () => {
     if (user.id) {
-      onDelete(user.id);
-      setShowDeleteDialog(false);
+      startUpdateTransition(() => {
+        deleteUser(user.id!, {
+          onSuccess: () => {
+            onDelete(user.id!);
+            setShowDeleteDialog(false);
+          },
+        });
+      });
     }
   };
 
@@ -531,23 +532,15 @@ function RowActions({
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <div className="flex justify-end">
-            <Button
-              size="icon"
-              variant="ghost"
-              className="shadow-none text-muted-foreground/60"
-              aria-label="Modifier l'utilisateur"
-            >
+            <Button size="icon" variant="ghost" className="shadow-none text-muted-foreground/60" aria-label="Modifier l'utilisateur">
               <RiMoreLine className="size-5" size={20} aria-hidden="true" />
             </Button>
           </div>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-auto">
           <DropdownMenuGroup>
-            <DropdownMenuItem
-              onClick={() => onEdit(user)}
-              disabled={isUpdatePending}
-            >
-              Modifier l'utilisateur
+            <DropdownMenuItem onClick={() => onEdit(user)} disabled={isUpdatePending}>
+              Modifier l&apos;utilisateur
             </DropdownMenuItem>
           </DropdownMenuGroup>
           <DropdownMenuSeparator />
@@ -570,9 +563,13 @@ function RowActions({
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={isDeleting || isUpdatePending}>
-              Annuler
-            </AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDelete}
-              disabled={isDeleting || isUpdatePending}
+            <AlertDialogCancel disabled={isDeleting || isUpdatePending}>Annuler</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete} disabled={isDeleting || isUpdatePending}>
+              Supprimer
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
+  );
+}

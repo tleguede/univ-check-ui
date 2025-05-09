@@ -1,15 +1,16 @@
-import { AcademicYear, AcademicYearResponse, CreateAcademicYearInput, UpdateAcademicYearInput } from "@/types/academic-year.types";
+import { AcademicYear, CreateAcademicYearInput, UpdateAcademicYearInput } from "@/types/academic-year.types";
+import { getAuthToken } from "@/utils/auth-utils";
 import api from "@/utils/axios";
 
 export class AcademicYearService {
-  static async getAcademicYears(page = 1, limit = 10): Promise<AcademicYearResponse> {
+  static async getAcademicYears(): Promise<AcademicYear[]> {
     try {
-      const token = localStorage.getItem("auth-token");
+      const token = getAuthToken();
       if (!token) {
         throw new Error("Vous devez être connecté pour accéder à cette ressource");
       }
 
-      const { data } = await api.get(`/api/v1/academic-years?page=${page}&limit=${limit}`, {
+      const { data } = await api.get(`/api/v1/academic-years`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -24,7 +25,7 @@ export class AcademicYearService {
 
   static async getAcademicYearById(id: string): Promise<AcademicYear> {
     try {
-      const token = localStorage.getItem("auth-token");
+      const token = getAuthToken();
       if (!token) {
         throw new Error("Vous devez être connecté pour accéder à cette ressource");
       }
@@ -44,7 +45,7 @@ export class AcademicYearService {
 
   static async createAcademicYear(input: CreateAcademicYearInput): Promise<AcademicYear> {
     try {
-      const token = localStorage.getItem("auth-token");
+      const token = getAuthToken();
       if (!token) {
         throw new Error("Vous devez être connecté pour accéder à cette ressource");
       }
@@ -64,7 +65,7 @@ export class AcademicYearService {
 
   static async updateAcademicYear(input: UpdateAcademicYearInput): Promise<AcademicYear> {
     try {
-      const token = localStorage.getItem("auth-token");
+      const token = getAuthToken();
       if (!token) {
         throw new Error("Vous devez être connecté pour accéder à cette ressource");
       }
@@ -85,7 +86,7 @@ export class AcademicYearService {
 
   static async deleteAcademicYear(id: string): Promise<void> {
     try {
-      const token = localStorage.getItem("auth-token");
+      const token = getAuthToken();
       if (!token) {
         throw new Error("Vous devez être connecté pour accéder à cette ressource");
       }
