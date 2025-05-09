@@ -71,7 +71,7 @@ export class OrganizationService {
       }
 
       const { id, ...updateData } = input;
-      const { data } = await api.patch(`/api/v1/organizations/${id}`, updateData, {
+      const { data } = await api.put(`/api/v1/organizations/${id}`, updateData, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
