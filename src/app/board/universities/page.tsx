@@ -16,25 +16,24 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { useCurrentUser } from "@/hooks/queries/use-auth.query";
-import { RiScanLine } from "@remixicon/react";
-import { PiBuildingsDuotone } from "react-icons/pi";
+import { RiBuilding2Line, RiScanLine } from "@remixicon/react";
 import { useState } from "react";
-import { EditOrganizationDialog } from "./components/edit-organizations.dialog";
-import { useOrganizationsQuery } from "@/hooks/queries/use-organizations.query";
-import { Organization } from "@/types/organization.types";
-import { OrganizationsTable } from "./components/organizations.table";
-import { AddOrganizationDialog } from "./components/add-organization.dialog";
+import { EditUniversityDialog } from "./components/edit-university.dialog";
+import { useUniversitiesQuery } from "@/hooks/queries/use-universities.query";
+import { University } from "@/types/university.types";
+import { UniversitiesTable } from "./components/universities.table";
+import { AddUniversityDialog } from "./components/add-university.dialog";
 
-export default function AcademicYearsPage() {
+export default function UniversitiesPage() {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-  const [editingYear, setEditingYear] = useState<Organization | null>(null);
+  const [editingUniversity, setEditingUniversity] = useState<University | null>(null);
 
   const { data: user } = useCurrentUser();
-  const { data: organizations, isLoading, refetch } = useOrganizationsQuery();
+  const { data: universities, isLoading, refetch } = useUniversitiesQuery();
 
   // const isAdmin = user?.user?.role === "ADMIN";
   const isAdmin = true;
-console.log("user", user);
+
   return (
     <SidebarProvider>
       <AppSidebar />
@@ -53,7 +52,7 @@ console.log("user", user);
                 </BreadcrumbItem>
                 <BreadcrumbSeparator className="hidden md:block" />
                 <BreadcrumbItem>
-                  <BreadcrumbPage>Organisations</BreadcrumbPage>
+                  <BreadcrumbPage>Universités</BreadcrumbPage>
                 </BreadcrumbItem>
               </BreadcrumbList>
             </Breadcrumb>
@@ -69,35 +68,35 @@ console.log("user", user);
           <div className="flex items-center justify-between gap-4">
             <div className="space-y-1">
               <h1 className="text-2xl font-semibold flex items-center gap-2">
-                <PiBuildingsDuotone className="text-primary" />
-                Organisations
+                <RiBuilding2Line className="text-primary" />
+                Universités
               </h1>
-              <p className="text-sm text-muted-foreground">Gérez les organisations de votre institution.</p>
+              <p className="text-sm text-muted-foreground">Gérez les universités de votre institution.</p>
             </div>
             {isAdmin && <Button onClick={() => setIsAddDialogOpen(true)}>Ajouter</Button>}
           </div>
 
           {/* Table */}
           <div className="flex-1 overflow-auto">
-            <OrganizationsTable
-              organizations={organizations || []}
+            <UniversitiesTable
+              universities={universities || []}
               isLoading={isLoading}
               isAdmin={isAdmin}
-              onEdit={(org) => setEditingYear(org)}
+              onEdit={(university) => setEditingUniversity(university)}
               onDelete={() => refetch()}
             />
           </div>
         </div>
       </SidebarInset>
 
-      {/* Add Organization Dialog */}
-      <AddOrganizationDialog isOpen={isAddDialogOpen} onOpenChange={setIsAddDialogOpen} onSuccess={() => refetch()} />
+      {/* Add University Dialog */}
+      <AddUniversityDialog isOpen={isAddDialogOpen} onOpenChange={setIsAddDialogOpen} onSuccess={() => refetch()} />
 
-      {/* Edit Organization Dialog */}
-      <EditOrganizationDialog
-        isOpen={!!editingYear}
-        onOpenChange={(open) => !open && setEditingYear(null)}
-        organization={editingYear}
+      {/* Edit University Dialog */}
+      <EditUniversityDialog
+        isOpen={!!editingUniversity}
+        onOpenChange={(open) => !open && setEditingUniversity(null)}
+        university={editingUniversity}
       />
     </SidebarProvider>
   );
