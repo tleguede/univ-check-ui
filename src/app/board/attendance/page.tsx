@@ -15,25 +15,18 @@ import {
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { useProfessorTodaysCoursesQuery } from "@/hooks/queries/use-attendance.query";
 import { useCurrentUser } from "@/hooks/queries/use-auth.query";
-import { useOrganizationsQuery } from "@/hooks/queries/use-organizations.query";
-import { Organization } from "@/types/organization.types";
-import { RiCalendarLine, RiScanLine } from "@remixicon/react";
-import { useState } from "react";
-import { AddOrganizationDialog } from "./components/add-organization.dialog";
-import { EditOrganizationDialog } from "./components/edit-organizations.dialog";
-import { OrganizationsTable } from "./components/organizations.table";
+import { RiCheckboxLine, RiScanLine } from "@remixicon/react";
+import { TodaysCoursesList } from "./components/todays-courses-list";
 
-export default function AcademicYearsPage() {
-  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-  const [editingYear, setEditingYear] = useState<Organization | null>(null);
-
+export default function AttendancePage() {
   const { data: user } = useCurrentUser();
-  const { data: organizations, isLoading, refetch } = useOrganizationsQuery();
+  const userId = user?.user?.id;
+  const isProfessor = user?.user?.role === "TEACHER";
 
-  // const isAdmin = user?.user?.role === "ADMIN";
-  const isAdmin = true;
-  console.log("user", user);
+  const { data: todaysCourses, isLoading, refetch } = useProfessorTodaysCoursesQuery(userId || "");
+
   return (
     <SidebarProvider>
       <AppSidebar />
@@ -52,7 +45,7 @@ export default function AcademicYearsPage() {
                 </BreadcrumbItem>
                 <BreadcrumbSeparator className="hidden md:block" />
                 <BreadcrumbItem>
-                  <BreadcrumbPage>Organisations</BreadcrumbPage>
+                  <BreadcrumbPage>Émargement</BreadcrumbPage>
                 </BreadcrumbItem>
               </BreadcrumbList>
             </Breadcrumb>
@@ -68,36 +61,28 @@ export default function AcademicYearsPage() {
           <div className="flex items-center justify-between gap-4">
             <div className="space-y-1">
               <h1 className="text-2xl font-semibold flex items-center gap-2">
-                <RiCalendarLine className="text-primary" />
-                Organisations
+                <RiCheckboxLine className="text-primary" />
+                Émargement des cours
               </h1>
-              <p className="text-sm text-muted-foreground">Gérez les organisations de votre institution.</p>
+              <p className="text-sm text-muted-foreground">Émargez vos cours du jour pour confirmer votre présence.</p>
             </div>
-            {isAdmin && <Button onClick={() => setIsAddDialogOpen(true)}>Ajouter</Button>}
+            <Button onClick={() => refetch()}>Actualiser</Button>
           </div>
 
-          {/* Table */}
+          {/* Courses List */}
           <div className="flex-1 overflow-auto">
-            <OrganizationsTable
-              organizations={organizations || []}
-              isLoading={isLoading}
-              isAdmin={isAdmin}
-              onEdit={(org) => setEditingYear(org)}
-              onDelete={() => refetch()}
-            />
+            {isProfessor ? (
+              <TodaysCoursesList courses={todaysCourses || []} isLoading={isLoading} onAttendanceSubmitted={() => refetch()} />
+            ) : (
+              <div className="flex items-center justify-center h-64">
+                <p className="text-muted-foreground">
+                  Vous n&apos;êtes pas autorisé à accéder à cette page. Seuls les professeurs peuvent émarger.
+                </p>
+              </div>
+            )}
           </div>
         </div>
       </SidebarInset>
-
-      {/* Add Organization Dialog */}
-      <AddOrganizationDialog isOpen={isAddDialogOpen} onOpenChange={setIsAddDialogOpen} onSuccess={() => refetch()} />
-
-      {/* Edit Organization Dialog */}
-      <EditOrganizationDialog
-        isOpen={!!editingYear}
-        onOpenChange={(open) => !open && setEditingYear(null)}
-        organization={editingYear}
-      />
     </SidebarProvider>
   );
 }

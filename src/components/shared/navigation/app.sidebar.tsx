@@ -20,14 +20,24 @@ import {
 } from "@/components/ui/sidebar";
 
 import { mainSections, otherSections, teamsData } from "@/config/navigation-items";
+import { useCurrentUser } from "@/hooks/queries/use-auth.query";
 import { PiSignOutDuotone } from "react-icons/pi";
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const pathname = usePathname();
+  const { data: userData } = useCurrentUser();
+  const userRole = userData?.user?.role;
 
   const isActive = (url: string) => {
     if (url === "#") return false;
     return pathname === url || pathname.startsWith(`${url}/`);
+  };
+
+  // Fonction pour vérifier si l'utilisateur a la permission pour un élément de menu
+  const hasPermission = (permission?: string[]) => {
+    if (!permission) return true; // Si pas de permission requise, tout le monde peut voir
+    if (!userRole) return false; // Si pas de rôle utilisateur, personne ne peut voir
+    return permission.includes(userRole);
   };
 
   return (
@@ -43,26 +53,28 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             <SidebarGroupLabel className="uppercase text-muted-foreground/60">{section.title}</SidebarGroupLabel>
             <SidebarGroupContent className="px-2">
               <SidebarMenu>
-                {section.items.map((item) => (
-                  <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton
-                      asChild
-                      className="group/menu-button font-medium gap-3 h-9 rounded-md bg-gradient-to-r hover:bg-transparent hover:from-sidebar-accent hover:to-sidebar-accent/40 data-[active=true]:from-primary/20 data-[active=true]:to-primary/5 [&>svg]:size-auto"
-                      isActive={isActive(item.url)}
-                    >
-                      <Link href={item.url}>
-                        {item.icon && (
-                          <item.icon
-                            className="text-muted-foreground/60 group-data-[active=true]/menu-button:text-primary"
-                            size={22}
-                            aria-hidden="true"
-                          />
-                        )}
-                        <span>{item.title}</span>
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                ))}
+                {section.items
+                  .filter((item) => hasPermission(item.permission))
+                  .map((item) => (
+                    <SidebarMenuItem key={item.title}>
+                      <SidebarMenuButton
+                        asChild
+                        className="group/menu-button font-medium gap-3 h-9 rounded-md bg-gradient-to-r hover:bg-transparent hover:from-sidebar-accent hover:to-sidebar-accent/40 data-[active=true]:from-primary/20 data-[active=true]:to-primary/5 [&>svg]:size-auto"
+                        isActive={isActive(item.url)}
+                      >
+                        <Link href={item.url}>
+                          {item.icon && (
+                            <item.icon
+                              className="text-muted-foreground/60 group-data-[active=true]/menu-button:text-primary"
+                              size={22}
+                              aria-hidden="true"
+                            />
+                          )}
+                          <span>{item.title}</span>
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  ))}
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>
@@ -73,26 +85,28 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             <SidebarGroupLabel className="uppercase text-muted-foreground/60">{section.title}</SidebarGroupLabel>
             <SidebarGroupContent className="px-2">
               <SidebarMenu>
-                {section.items.map((item) => (
-                  <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton
-                      asChild
-                      className="group/menu-button font-medium gap-3 h-9 rounded-md bg-gradient-to-r hover:bg-transparent hover:from-sidebar-accent hover:to-sidebar-accent/40 data-[active=true]:from-primary/20 data-[active=true]:to-primary/5 [&>svg]:size-auto"
-                      isActive={isActive(item.url)}
-                    >
-                      <Link href={item.url}>
-                        {item.icon && (
-                          <item.icon
-                            className="text-muted-foreground/60 group-data-[active=true]/menu-button:text-primary"
-                            size={22}
-                            aria-hidden="true"
-                          />
-                        )}
-                        <span>{item.title}</span>
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                ))}
+                {section.items
+                  .filter((item) => hasPermission(item.permission))
+                  .map((item) => (
+                    <SidebarMenuItem key={item.title}>
+                      <SidebarMenuButton
+                        asChild
+                        className="group/menu-button font-medium gap-3 h-9 rounded-md bg-gradient-to-r hover:bg-transparent hover:from-sidebar-accent hover:to-sidebar-accent/40 data-[active=true]:from-primary/20 data-[active=true]:to-primary/5 [&>svg]:size-auto"
+                        isActive={isActive(item.url)}
+                      >
+                        <Link href={item.url}>
+                          {item.icon && (
+                            <item.icon
+                              className="text-muted-foreground/60 group-data-[active=true]/menu-button:text-primary"
+                              size={22}
+                              aria-hidden="true"
+                            />
+                          )}
+                          <span>{item.title}</span>
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  ))}
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>

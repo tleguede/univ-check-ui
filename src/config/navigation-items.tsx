@@ -1,5 +1,12 @@
 import { IconType } from "react-icons";
-import { PiCalendarDuotone, PiEnvelopeOpenDuotone, PiGearDuotone, PiHouseDuotone, PiUserDuotone } from "react-icons/pi";
+import {
+  PiCalendarDuotone,
+  PiCheckSquareDuotone,
+  PiEnvelopeOpenDuotone,
+  PiGearDuotone,
+  PiHouseDuotone,
+  PiUserDuotone,
+} from "react-icons/pi";
 import { routes } from "./routes";
 
 // Types definitions
@@ -13,6 +20,7 @@ export interface NavMenuItem {
   url: string;
   icon?: IconType;
   isActive?: boolean;
+  permission?: string[]; // Ajout de la propriété permission pour gérer les autorisations
 }
 
 export interface NavMenuGroup {
@@ -60,6 +68,12 @@ export const mainSections: NavMenuGroup[] = [
         title: "Utilisateurs",
         url: routes.board.users,
         icon: PiUserDuotone,
+      },
+      {
+        title: "Émargement",
+        url: routes.board.attendance,
+        icon: PiCheckSquareDuotone,
+        permission: ["TEACHER"], // Cette page est réservée aux professeurs
       },
     ],
   },

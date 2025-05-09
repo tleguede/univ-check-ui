@@ -1,7 +1,7 @@
 export const routes = {
   auth: {
-    signIn: "auth/sign-in",
-    signUp: "auth/sign-up",
+    signIn: "/auth/sign-in",
+    signUp: "/auth/sign-up",
     forgotPassword: "auth/forgot-password",
     resetPassword: "auth/reset-password",
   },
@@ -12,5 +12,6 @@ export const routes = {
     settings: "/board/settings",
     academicYears: "/board/academic-years",
     organizations: "/board/organizations",
+    attendance: "/board/attendance", // Ajout de la route d'émargement
   },
 };
