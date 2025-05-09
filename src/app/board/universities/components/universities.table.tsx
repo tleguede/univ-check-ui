@@ -47,9 +47,8 @@ export function UniversitiesTable({ universities, isLoading, isAdmin, onEdit, on
       <TableHeader>
         <TableRow>
           <TableHead>Nom</TableHead>
-          <TableHead>Description</TableHead>
-          <TableHead>Adresse</TableHead>
-          <TableHead>Site web</TableHead>
+          <TableHead>Organisation</TableHead>
+          <TableHead>Responsable</TableHead>
           <TableHead>Créé le</TableHead>
           <TableHead>Mise à jour</TableHead>
           {isAdmin && <TableHead className="w-[100px]">Actions</TableHead>}
@@ -60,9 +59,8 @@ export function UniversitiesTable({ universities, isLoading, isAdmin, onEdit, on
           universities.map((university) => (
             <TableRow key={university.id}>
               <TableCell className="font-medium">{university.name}</TableCell>
-              <TableCell>{university.description || "-"}</TableCell>
-              <TableCell>{university.address || "-"}</TableCell>
-              <TableCell>{university.website || "-"}</TableCell>
+              <TableCell>{university.organization?.name || "-"}</TableCell>
+              <TableCell>{university.responsable?.name || "-"}</TableCell>
               <TableCell>{formatDate(university.createdAt)}</TableCell>
               <TableCell>{formatDate(university.updatedAt)}</TableCell>
               {isAdmin && (

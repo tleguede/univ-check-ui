@@ -1,4 +1,6 @@
 import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useOrganizationsQuery } from "@/hooks/queries/use-organizations.query";
 import {
   Dialog,
   DialogContent,
@@ -17,19 +19,19 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { useUpdateUniversityMutation } from "@/hooks/queries/use-universities.query";
 import { University } from "@/types/university.types";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import { useUpdateUniversityMutation } from "@/hooks/queries/use-universities.query";
+import { useUsersQuery } from "@/hooks/queries/use-user.query";
 
 const formSchema = z.object({
   id: z.string(),
   name: z.string().min(2, "Le nom doit contenir au moins 2 caractères"),
-  description: z.string().optional(),
-  address: z.string().optional(),
-  website: z.string().url().optional(),
+  organization: z.string().min(1, "Veuillez sélectionner une organisation"),
+  responsable: z.string().min(1, "Veuillez sélectionner un responsable"),
 });
 
 interface EditUniversityDialogProps {
@@ -43,14 +45,16 @@ export function EditUniversityDialog({
   onOpenChange,
   university,
 }: EditUniversityDialogProps) {
+  const { data: organizations } = useOrganizationsQuery();
+  const { data: users } = useUsersQuery();
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       id: "",
       name: "",
-      description: "",
-      address: "",
-      website: "",
+      organization: "",
+      responsable: "",
     },
   });
 
@@ -61,9 +65,8 @@ export function EditUniversityDialog({
       form.reset({
         id: university.id,
         name: university.name,
-        description: university.description || "",
-        address: university.address || "",
-        website: university.website || "",
+        organization: typeof university.organization === "string" ? university.organization : university.organization?.id || "",
+        responsable: typeof university.responsable === "string" ? university.responsable : university.responsable?.email || "",
       });
     }
   }, [form, university]);
@@ -95,7 +98,7 @@ export function EditUniversityDialog({
                 <FormItem>
                   <FormLabel>Nom</FormLabel>
                   <FormControl>
-                    <Input placeholder="Sciences Po Paris" {...field} />
+                    <Input placeholder="Nom de l'université" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -103,42 +106,48 @@ export function EditUniversityDialog({
             />
             <FormField
               control={form.control}
-              name="description"
+              name="organization"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Description</FormLabel>
-                  <FormControl>
-                    <Textarea
-                      placeholder="Description de l'université..."
-                      {...field}
-                    />
-                  </FormControl>
+                  <FormLabel>Organisation</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Sélectionnez une organisation" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {organizations?.map((org) => (
+                        <SelectItem key={org.id} value={org.id}>
+                          {org.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                   <FormMessage />
                 </FormItem>
               )}
             />
             <FormField
               control={form.control}
-              name="address"
+              name="responsable"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Adresse</FormLabel>
-                  <FormControl>
-                    <Input placeholder="27 Rue Saint-Guillaume, 75007 Paris" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="website"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Site web</FormLabel>
-                  <FormControl>
-                    <Input placeholder="https://www.sciencespo.fr" {...field} />
-                  </FormControl>
+                  <FormLabel>Responsable</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Sélectionnez un responsable" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {users?.users?.map((user) => (
+                        <SelectItem key={user.id} value={user.email}>
+                          {user.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                   <FormMessage />
                 </FormItem>
               )}
