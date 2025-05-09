@@ -16,45 +16,40 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useProfessorTodaysCoursesQuery, useProfessorWeekCoursesQuery } from "@/hooks/queries/use-attendance.query";
+import { useClassSessionsQuery, useEmargementsQuery } from "@/hooks/queries/use-attendance.query";
 import { useCurrentUser } from "@/hooks/queries/use-auth.query";
-import { RiCalendar2Line, RiCheckboxLine, RiScanLine } from "@remixicon/react";
-import { format, startOfWeek } from "date-fns";
+import { RiAdminLine, RiFileListLine, RiScanLine, RiUserSearchLine } from "@remixicon/react";
+import { redirect } from "next/navigation";
 import { useState } from "react";
-import { TodaysCoursesList } from "./components/todays-courses-list";
-import { WeeklyCoursesCalendar } from "./components/weekly-courses-calendar";
+import { AttendanceList } from "./components/attendance-list";
+import { SessionsList } from "./components/sessions-list";
 
-export default function AttendancePage() {
+export default function AttendanceAdminPage() {
   const { data: user } = useCurrentUser();
-  const userId = user?.user?.id;
-  const isProfessor = user?.user?.role === "TEACHER";
+  const isAdmin = user?.user?.role === "ADMIN";
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
 
-  // État pour la semaine sélectionnée
-  const [selectedWeekStart, setSelectedWeekStart] = useState<Date>(startOfWeek(new Date(), { weekStartsOn: 1 }));
+  // Si l'utilisateur n'est pas administrateur, rediriger vers le tableau de bord
+  if (user && !isAdmin) {
+    redirect("/board");
+  }
 
-  // Formater la date pour la requête API
-  const weekStartDateString = format(selectedWeekStart, "yyyy-MM-dd");
-
-  // Requête pour les cours du jour
+  // Requêtes pour les émargements et les sessions de cours
   const {
-    data: todaysCourses,
-    isLoading: isTodayLoading,
-    refetch: refetchTodaysCourses,
-  } = useProfessorTodaysCoursesQuery(userId || "");
+    data: emargementsData,
+    isLoading: isEmargementsLoading,
+    refetch: refetchEmargements,
+  } = useEmargementsQuery(currentPage, pageSize);
 
-  // Requête pour les cours de la semaine
-  const {
-    data: weekCourses,
-    isLoading: isWeekLoading,
-    refetch: refetchWeekCourses,
-  } = useProfessorWeekCoursesQuery(userId || "", weekStartDateString);
+  const { data: sessionsData, isLoading: isSessionsLoading, refetch: refetchSessions } = useClassSessionsQuery(currentPage, pageSize);
 
   // Rafraîchir les données selon l'onglet actif
   const refetchCurrentTab = (activeTab: string) => {
-    if (activeTab === "today") {
-      refetchTodaysCourses();
+    if (activeTab === "emargements") {
+      refetchEmargements();
     } else {
-      refetchWeekCourses();
+      refetchSessions();
     }
   };
 
@@ -76,7 +71,7 @@ export default function AttendancePage() {
                 </BreadcrumbItem>
                 <BreadcrumbSeparator className="hidden md:block" />
                 <BreadcrumbItem>
-                  <BreadcrumbPage>Émargement</BreadcrumbPage>
+                  <BreadcrumbPage>Administration des émargements</BreadcrumbPage>
                 </BreadcrumbItem>
               </BreadcrumbList>
             </Breadcrumb>
@@ -92,56 +87,64 @@ export default function AttendancePage() {
           <div className="flex items-center justify-between gap-4">
             <div className="space-y-1">
               <h1 className="text-2xl font-semibold flex items-center gap-2">
-                <RiCheckboxLine className="text-primary" />
-                Émargement des cours
+                <RiAdminLine className="text-primary" />
+                Gestion des émargements
               </h1>
-              <p className="text-sm text-muted-foreground">Émargez vos cours pour confirmer votre présence.</p>
+              <p className="text-sm text-muted-foreground">Suivez et gérez les présences des professeurs aux cours.</p>
             </div>
           </div>
 
-          {isProfessor ? (
-            <Tabs defaultValue="today" className="w-full" onValueChange={(value) => refetchCurrentTab(value)}>
+          {isAdmin ? (
+            <Tabs defaultValue="emargements" className="w-full" onValueChange={(value) => refetchCurrentTab(value)}>
               <div className="flex justify-between items-center mb-4">
                 <TabsList>
-                  <TabsTrigger value="today" className="flex items-center gap-2">
-                    <RiCheckboxLine size={18} />
-                    <span>Aujourd'hui</span>
+                  <TabsTrigger value="emargements" className="flex items-center gap-2">
+                    <RiFileListLine size={18} />
+                    <span>Émargements</span>
                   </TabsTrigger>
-                  <TabsTrigger value="week" className="flex items-center gap-2">
-                    <RiCalendar2Line size={18} />
-                    <span>Calendrier</span>
+                  <TabsTrigger value="sessions" className="flex items-center gap-2">
+                    <RiUserSearchLine size={18} />
+                    <span>Sessions de cours</span>
                   </TabsTrigger>
                 </TabsList>
                 <Button
                   variant="outline"
-                  onClick={() => refetchCurrentTab(document.querySelector('[aria-selected="true"]')?.getAttribute("value") || "today")}
+                  onClick={() =>
+                    refetchCurrentTab(document.querySelector('[aria-selected="true"]')?.getAttribute("value") || "emargements")
+                  }
                 >
                   Actualiser
                 </Button>
               </div>
 
-              <TabsContent value="today" className="mt-0">
-                <TodaysCoursesList
-                  courses={todaysCourses || []}
-                  isLoading={isTodayLoading}
-                  onAttendanceSubmitted={() => refetchTodaysCourses()}
+              <TabsContent value="emargements" className="mt-0">
+                <AttendanceList
+                  emargements={emargementsData || []}
+                  isLoading={isEmargementsLoading}
+                  onRefresh={() => refetchEmargements()}
+                  currentPage={currentPage}
+                  onPageChange={setCurrentPage}
+                  pageSize={pageSize}
+                  onPageSizeChange={setPageSize}
                 />
               </TabsContent>
 
-              <TabsContent value="week" className="mt-0">
-                <WeeklyCoursesCalendar
-                  courses={weekCourses || []}
-                  isLoading={isWeekLoading}
-                  onAttendanceSubmitted={() => refetchWeekCourses()}
-                  weekStartDate={selectedWeekStart}
+              <TabsContent value="sessions" className="mt-0">
+                <SessionsList
+                  sessions={sessionsData?.classSessions || []}
+                  isLoading={isSessionsLoading}
+                  totalItems={sessionsData?.total || 0}
+                  onRefresh={() => refetchSessions()}
+                  currentPage={currentPage}
+                  onPageChange={setCurrentPage}
+                  pageSize={pageSize}
+                  onPageSizeChange={setPageSize}
                 />
               </TabsContent>
             </Tabs>
           ) : (
             <div className="flex items-center justify-center h-64">
-              <p className="text-muted-foreground">
-                Vous n&apos;êtes pas autorisé à accéder à cette page. Seuls les professeurs peuvent émarger.
-              </p>
+              <p className="text-muted-foreground">Chargement...</p>
             </div>
           )}
         </div>
