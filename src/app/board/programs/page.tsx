@@ -16,24 +16,24 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { useCurrentUser } from "@/hooks/queries/use-auth.query";
-import { RiCalendarLine, RiScanLine } from "@remixicon/react";
+import { RiBookmarkLine, RiScanLine } from "@remixicon/react";
 import { useState } from "react";
-import { EditOrganizationDialog } from "./components/edit-organizations.dialog";
-import { useOrganizationsQuery } from "@/hooks/queries/use-organizations.query";
-import { Organization } from "@/types/organization.types";
-import { OrganizationsTable } from "./components/organizations.table";
-import { AddOrganizationDialog } from "./components/add-organization.dialog";
+import { EditProgramDialog } from "./components/edit-program.dialog";
+import { useProgramsQuery } from "@/hooks/queries/use-program.query";
+import { Program } from "@/types/program.types";
+import { ProgramsTable } from "./components/programs.table";
+import { AddProgramDialog } from "./components/add-program.dialog";
 
-export default function AcademicYearsPage() {
+export default function ProgramsPage() {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-  const [editingYear, setEditingYear] = useState<Organization | null>(null);
+  const [editingProgram, setEditingProgram] = useState<Program | null>(null);
 
-  const { data: user } = useCurrentUser();
-  const { data: organizations, isLoading, refetch } = useOrganizationsQuery();
+  useCurrentUser();
+  const { data: programs, isLoading, refetch } = useProgramsQuery();
 
   // const isAdmin = user?.user?.role === "ADMIN";
   const isAdmin = true;
-console.log("user", user);
+
   return (
     <SidebarProvider>
       <AppSidebar />
@@ -52,7 +52,7 @@ console.log("user", user);
                 </BreadcrumbItem>
                 <BreadcrumbSeparator className="hidden md:block" />
                 <BreadcrumbItem>
-                  <BreadcrumbPage>Organisations</BreadcrumbPage>
+                  <BreadcrumbPage>Programmes</BreadcrumbPage>
                 </BreadcrumbItem>
               </BreadcrumbList>
             </Breadcrumb>
@@ -68,35 +68,36 @@ console.log("user", user);
           <div className="flex items-center justify-between gap-4">
             <div className="space-y-1">
               <h1 className="text-2xl font-semibold flex items-center gap-2">
-                <RiCalendarLine className="text-primary" />
-                Organisations
+                <RiBookmarkLine className="text-primary" />
+                Programmes
               </h1>
-              <p className="text-sm text-muted-foreground">Gérez les organisations de votre institution.</p>
+              <p className="text-sm text-muted-foreground">Gérez les programmes académiques de votre institution.</p>
             </div>
             {isAdmin && <Button onClick={() => setIsAddDialogOpen(true)}>Ajouter</Button>}
           </div>
 
           {/* Table */}
           <div className="flex-1 overflow-auto">
-            <OrganizationsTable
-              organizations={organizations || []}
+            <ProgramsTable
+              programs={programs || []}
               isLoading={isLoading}
               isAdmin={isAdmin}
-              onEdit={(org) => setEditingYear(org)}
+              onEdit={(program) => setEditingProgram(program)}
               onDelete={() => refetch()}
             />
           </div>
         </div>
       </SidebarInset>
 
-      {/* Add Organization Dialog */}
-      <AddOrganizationDialog isOpen={isAddDialogOpen} onOpenChange={setIsAddDialogOpen} onSuccess={() => refetch()} />
+      {/* Add Program Dialog */}
+      <AddProgramDialog isOpen={isAddDialogOpen} onOpenChange={setIsAddDialogOpen} onSuccess={() => refetch()} />
 
-      {/* Edit Organization Dialog */}
-      <EditOrganizationDialog
-        isOpen={!!editingYear}
-        onOpenChange={(open) => !open && setEditingYear(null)}
-        organization={editingYear}
+      {/* Edit Program Dialog */}
+      <EditProgramDialog
+        isOpen={!!editingProgram}
+        onOpenChange={(open) => !open && setEditingProgram(null)}
+        program={editingProgram}
+        onSuccess={() => refetch()}
       />
     </SidebarProvider>
   );
