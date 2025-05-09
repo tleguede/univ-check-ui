@@ -1,5 +1,6 @@
 import { IconType } from "react-icons";
 import { PiBookmarkDuotone, PiCalendarDuotone, PiEnvelopeOpenDuotone, PiGearDuotone, PiHouseDuotone, PiUserDuotone } from "react-icons/pi";
+import { PiBuildingDuotone, PiBuildingsDuotone, PiCalendarDuotone, PiGearDuotone, PiHouseDuotone, PiUserDuotone } from "react-icons/pi";
 import { routes } from "./routes";
 
 // Types definitions
@@ -54,7 +55,12 @@ export const mainSections: NavMenuGroup[] = [
       {
         title: "Organisations",
         url: routes.board.organizations,
-        icon: PiEnvelopeOpenDuotone,
+        icon: PiBuildingsDuotone,
+      },
+      {
+        title: "Universités",
+        url: routes.board.universities,
+        icon: PiBuildingDuotone,
       },
       {
         title: "Programmes",

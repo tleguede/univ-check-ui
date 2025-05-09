@@ -13,5 +13,6 @@ export const routes = {
     academicYears: "/board/academic-years",
     organizations: "/board/organizations",
     programs: "/board/programs",
+    universities: "/board/universities",
   },
 };
