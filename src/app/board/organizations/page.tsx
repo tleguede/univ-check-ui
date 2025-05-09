@@ -19,7 +19,7 @@ import { useCurrentUser } from "@/hooks/queries/use-auth.query";
 import { RiScanLine } from "@remixicon/react";
 import { PiBuildingsDuotone } from "react-icons/pi";
 import { useState } from "react";
-import { EditOrganizationDialog } from "./components/edit-academic-year.dialog";
+import { EditOrganizationDialog } from "./components/edit-organizations.dialog";
 import { useOrganizationsQuery } from "@/hooks/queries/use-organizations.query";
 import { Organization } from "@/types/organization.types";
 import { OrganizationsTable } from "./components/organizations.table";
