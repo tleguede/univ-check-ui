@@ -15,5 +15,6 @@ export const routes = {
     attendance: "/board/attendance",
     programs: "/board/programs",
     universities: "/board/universities",
+    courses: "/board/courses",
   },
 };
