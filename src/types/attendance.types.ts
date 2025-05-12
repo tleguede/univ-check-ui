@@ -93,6 +93,7 @@ export interface CreateEmargementInput {
   status: "PENDING" | "PRESENT" | "ABSENT" | "SUPERVISOR_CONFIRMED" | "CLASS_HEADER_CONFIRMED";
   classSessionId: string;
   professorId: string;
+  comments?: string;
 }
 
 export interface UpdateEmargementInput {

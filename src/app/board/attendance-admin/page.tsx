@@ -22,6 +22,8 @@ import { RiAdminLine, RiFileListLine, RiScanLine, RiUserSearchLine } from "@remi
 import { redirect } from "next/navigation";
 import { useState } from "react";
 import { AttendanceList } from "./components/attendance-list";
+import { AdvancedFilter } from "./components/advanced-filter";
+import { NotificationSystem } from "./components/notification-system";
 import { SessionsList } from "./components/sessions-list";
 
 export default function AttendanceAdminPage() {
@@ -35,12 +37,13 @@ export default function AttendanceAdminPage() {
     redirect("/board");
   }
 
-  // Requêtes pour les émargements et les sessions de cours
+  // Requêtes pour les émargements et les sessions de cours  const [filters, setFilters] = useState({});
+  
   const {
     data: emargementsData,
     isLoading: isEmargementsLoading,
     refetch: refetchEmargements,
-  } = useEmargementsQuery(currentPage, pageSize);
+  } = useEmargementsQuery(currentPage, pageSize, filters);
 
   const { data: sessionsData, isLoading: isSessionsLoading, refetch: refetchSessions } = useClassSessionsQuery(currentPage, pageSize);
 
@@ -115,17 +118,31 @@ export default function AttendanceAdminPage() {
                 >
                   Actualiser
                 </Button>
-              </div>
-
-              <TabsContent value="emargements" className="mt-0">
+              </div>              <TabsContent value="emargements" className="mt-0">
+                <NotificationSystem 
+                  emargements={emargementsData?.emargements || []}
+                  onRefresh={() => refetchEmargements()}
+                  refreshInterval={60000}
+                  filters={filters}
+                />
+                
+                <AdvancedFilter 
+                  onFilterChange={(newFilters) => {
+                    setFilters(newFilters);
+                    setCurrentPage(1); // Réinitialiser la page lors d'un nouveau filtrage
+                  }}
+                  onRefresh={() => refetchEmargements()}
+                />
+                
                 <AttendanceList
-                  emargements={emargementsData || []}
+                  emargements={emargementsData?.emargements || []}
                   isLoading={isEmargementsLoading}
                   onRefresh={() => refetchEmargements()}
                   currentPage={currentPage}
                   onPageChange={setCurrentPage}
                   pageSize={pageSize}
                   onPageSizeChange={setPageSize}
+                  totalItems={emargementsData?.total || 0}
                 />
               </TabsContent>
 

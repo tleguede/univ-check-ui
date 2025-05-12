@@ -126,15 +126,23 @@ export class AttendanceService {
       }
 
       // URL à adapter selon l'API réelle
-      const { data } = await api.get(`/api/v1/courses/professor/${professorId}/today`, {
+      const { data } = await api.get(`/api/v1/class-sessions/professor/${professorId}/today`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
 
-      return data;
+      // Transformer les données pour correspondre au type Course[]
+      return data.map((session: any) => ({
+        id: session.id,
+        title: session.course?.title || 'Sans titre',
+        startTime: session.heureDebut,
+        endTime: session.heureFin,
+        location: session.location || 'Non spécifié',
+        hasAttendance: !!session.emargement,
+      }));
     } catch (error) {
-      console.error(`Erreur lors de la récupération des cours du jour:`, error);
+      console.error(`Erreur lors de la récupération des cours du jour pour le professeur ${professorId}:`, error);
       throw new Error("Impossible de récupérer les cours du jour");
     }
   }
@@ -177,7 +185,7 @@ export class AttendanceService {
       return data;
     } catch (error) {
       console.error(`Erreur lors de la récupération de la session de cours ${id}:`, error);
-      throw new Error("Impossible de récupérer la session de cours");
+      throw new Error("Impossible de récupérer les détails de la session de cours");
     }
   }
 
@@ -217,7 +225,7 @@ export class AttendanceService {
 
       return data;
     } catch (error) {
-      console.error(`Erreur lors de la mise à jour de la session de cours:`, error);
+      console.error(`Erreur lors de la mise à jour de la session de cours ${input.id}:`, error);
       throw new Error("Impossible de mettre à jour la session de cours");
     }
   }
@@ -237,31 +245,46 @@ export class AttendanceService {
 
       return true;
     } catch (error) {
-      console.error(`Erreur lors de la suppression de la session de cours:`, error);
+      console.error(`Erreur lors de la suppression de la session de cours ${id}:`, error);
       throw new Error("Impossible de supprimer la session de cours");
     }
   }
-
-  // Méthodes pour les émargements (Emargement)
-  static async getEmargements(page = 1, limit = 10): Promise<Emargement[]> {
+  static async getProfessorClassSessions(professorId: string, startDate?: string, endDate?: string): Promise<ClassSession[]> {
     try {
       const token = getAuthToken();
       if (!token) {
         throw new Error("Vous devez être connecté pour accéder à cette ressource");
       }
 
-      const { data } = await api.get(`/api/v1/emargements`, {
+      const params: Record<string, string> = { professorId };
+      if (startDate) params.startDate = startDate;
+      if (endDate) params.endDate = endDate;
+
+      const { data } = await api.get(`/api/v1/class-sessions/professor/${professorId}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
-        params: { page, limit },
+        params,
       });
 
       return data;
     } catch (error) {
-      console.error("Erreur lors de la récupération des émargements:", error);
-      throw new Error("Impossible de récupérer les émargements");
+      console.error(`Erreur lors de la récupération des sessions de cours pour le professeur ${professorId}:`, error);
+      throw new Error("Impossible de récupérer les sessions de cours du professeur");
     }
+  }
+  static async getEmargements(
+    page = 1, 
+    limit = 10, 
+    filters?: {
+      professorName?: string;
+      courseTitle?: string;
+      dateFrom?: Date | string;
+      dateTo?: Date | string;
+      status?: string;
+    }
+  ): Promise<{ emargements: Emargement[]; total: number }> {
+    return EmargementService.getEmargements(page, limit, filters);
   }
 
   static async getEmargementById(id: string): Promise<Emargement> {
@@ -280,7 +303,7 @@ export class AttendanceService {
       return data;
     } catch (error) {
       console.error(`Erreur lors de la récupération de l'émargement ${id}:`, error);
-      throw new Error("Impossible de récupérer l'émargement");
+      throw new Error("Impossible de récupérer les détails de l'émargement");
     }
   }
 
@@ -312,7 +335,7 @@ export class AttendanceService {
       }
 
       const { id, ...updateData } = input;
-      const { data } = await api.patch(`/api/v1/emargements/${id}`, updateData, {
+      const { data } = await api.put(`/api/v1/emargements/${id}`, updateData, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -320,7 +343,7 @@ export class AttendanceService {
 
       return data;
     } catch (error) {
-      console.error(`Erreur lors de la mise à jour de l'émargement:`, error);
+      console.error(`Erreur lors de la mise à jour de l'émargement ${input.id}:`, error);
       throw new Error("Impossible de mettre à jour l'émargement");
     }
   }
@@ -332,46 +355,16 @@ export class AttendanceService {
         throw new Error("Vous devez être connecté pour accéder à cette ressource");
       }
 
-      const { data } = await api.patch(
-        `/api/v1/emargements/${id}/status/${status}`,
-        {},
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      return data;
-    } catch (error) {
-      console.error(`Erreur lors de la mise à jour du statut de l'émargement:`, error);
-      throw new Error("Impossible de mettre à jour le statut de l'émargement");
-    }
-  }
-
-  static async getProfessorClassSessions(professorId: string, startDate?: string, endDate?: string): Promise<ClassSession[]> {
-    try {
-      const token = getAuthToken();
-      if (!token) {
-        throw new Error("Vous devez être connecté pour accéder à cette ressource");
-      }
-
-      // Construire les paramètres de requête
-      const params: any = {};
-      if (startDate) params.startDate = startDate;
-      if (endDate) params.endDate = endDate;
-
-      const { data } = await api.get(`/api/v1/class-sessions/professor/${professorId}`, {
+      await api.patch(`/api/v1/emargements/status/${id}/${status}`, null, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
-        params,
       });
 
-      return data;
+      return true;
     } catch (error) {
-      console.error(`Erreur lors de la récupération des sessions de cours du professeur:`, error);
-      throw new Error("Impossible de récupérer les sessions de cours du professeur");
+      console.error(`Erreur lors de la mise à jour du statut de l'émargement ${id}:`, error);
+      throw new Error("Impossible de mettre à jour le statut de l'émargement");
     }
   }
 
@@ -383,16 +376,24 @@ export class AttendanceService {
         throw new Error("Vous devez être connecté pour accéder à cette ressource");
       }
 
-      const { data } = await api.get(`/api/v1/courses/professor/${professorId}/week`, {
+      const { data } = await api.get(`/api/v1/class-sessions/professor/${professorId}/week`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
         params: { startDate },
       });
 
-      return data;
+      // Transformer les données pour correspondre au type Course[]
+      return data.map((session: any) => ({
+        id: session.id,
+        title: session.course?.title || 'Sans titre',
+        startTime: session.heureDebut,
+        endTime: session.heureFin,
+        location: session.location || 'Non spécifié',
+        hasAttendance: !!session.emargement,
+      }));
     } catch (error) {
-      console.error(`Erreur lors de la récupération des cours de la semaine:`, error);
+      console.error(`Erreur lors de la récupération des cours de la semaine pour le professeur ${professorId}:`, error);
       throw new Error("Impossible de récupérer les cours de la semaine");
     }
   }

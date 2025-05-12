@@ -13,7 +13,7 @@ import {
 import { Pagination } from "@/components/ui/pagination";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { useDeleteClassSessionMutation } from "@/hooks/queries/use-attendance.query";
+import { useCreateEmargementMutation, useDeleteClassSessionMutation } from "@/hooks/queries/use-attendance.query";
 import { ClassSession } from "@/types/attendance.types";
 import { RiCalendarCheckLine, RiMoreLine } from "@remixicon/react";
 import { format, parseISO } from "date-fns";
@@ -45,8 +45,8 @@ export function SessionsList({
   const [selectedSession, setSelectedSession] = useState<ClassSession | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
 
-  const { mutate: deleteClassSession, isPending } = useDeleteClassSessionMutation();
-
+  const { mutate: deleteClassSession, isPending: isDeletePending } = useDeleteClassSessionMutation();
+  const { mutate: createEmargement, isPending } = useCreateEmargementMutation();
   const handleDeleteSession = (sessionId: string) => {
     if (confirm("Êtes-vous sûr de vouloir supprimer cette session de cours ?")) {
       deleteClassSession(sessionId, {
@@ -289,7 +289,7 @@ export function SessionsList({
 
               {selectedSession.emargement && (
                 <div>
-                  <h3 className="font-semibold mb-1">Commentaires d'émargement</h3>
+                  <h3 className="font-semibold mb-1">Commentaires d&apos;émargement</h3>
                   <p className="text-sm">{selectedSession.emargement.comments || "Aucun commentaire"}</p>
                 </div>
               )}
@@ -302,9 +302,27 @@ export function SessionsList({
                 variant="default"
                 className="me-auto"
                 onClick={() => {
-                  // Dans une version ultérieure, on pourrait ajouter une fonction pour émarger manuellement
-                  toast.info("Fonctionnalité d'émargement manuel à venir");
+                  if (selectedSession) {
+                    const input = {
+                      status: "PRESENT",
+                      classSessionId: selectedSession.id,
+                      professorId: selectedSession.professor.id,
+                    };
+
+                    createEmargement(input, {
+                      onSuccess: () => {
+                        toast.success("Émargement manuel effectué avec succès");
+                        setDialogOpen(false);
+                        onRefresh();
+                      },
+                      onError: (error) => {
+                        toast.error("Erreur lors de l'émargement manuel");
+                        console.error("Erreur émargement manuel:", error);
+                      },
+                    });
+                  }
                 }}
+                disabled={isPending}
               >
                 <RiCalendarCheckLine className="mr-2" />
                 Émarger manuellement
