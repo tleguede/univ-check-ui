@@ -106,9 +106,7 @@ export function SessionsList({
               sessions.map((session) => (
                 <TableRow key={session.id}>
                   <TableCell className="font-medium">{session.course?.title}</TableCell>
-                  <TableCell>
-                    {session.professor?.firstName} {session.professor?.lastName}
-                  </TableCell>
+                  <TableCell>{session.professor?.name}</TableCell>
                   <TableCell>{format(parseISO(session.date), "dd/MM/yyyy", { locale: fr })}</TableCell>
                   <TableCell>
                     {format(parseISO(session.heureDebut), "HH:mm", { locale: fr })} -

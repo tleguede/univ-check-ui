@@ -136,9 +136,7 @@ export function AttendanceList({
             ) : (
               emargements.map((emargement) => (
                 <TableRow key={emargement.id}>
-                  <TableCell className="font-medium">
-                    {emargement.professor?.firstName} {emargement.professor?.lastName}
-                  </TableCell>
+                  <TableCell className="font-medium">{emargement.professor?.name}</TableCell>
                   <TableCell>{emargement.classSession?.course?.title}</TableCell>
                   <TableCell>{format(parseISO(emargement.classSession?.date), "dd/MM/yyyy", { locale: fr })}</TableCell>
                   <TableCell>
@@ -270,8 +268,8 @@ export function AttendanceList({
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Détails de l'émargement</DialogTitle>
-            <DialogDescription>Informations complètes sur l'émargement du cours</DialogDescription>
+            <DialogTitle>Détails de l&apos;émargement</DialogTitle>
+            <DialogDescription>Informations complètes sur l&apos;émargement du cours</DialogDescription>
           </DialogHeader>
 
           {selectedEmargement && (
@@ -279,9 +277,7 @@ export function AttendanceList({
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <h3 className="font-semibold mb-1">Professeur</h3>
-                  <p>
-                    {selectedEmargement.professor?.firstName} {selectedEmargement.professor?.lastName}
-                  </p>
+                  <p>{selectedEmargement.professor?.name}</p>
                 </div>
                 <div>
                   <h3 className="font-semibold mb-1">Cours</h3>
