@@ -140,10 +140,20 @@ export function useProfessorClassSessionsQuery(professorId: string, startDate?: 
 }
 
 // Nouveaux hooks pour les émargements
-export function useEmargementsQuery(page = 1, limit = 10) {
-  return useQuery<Emargement[]>({
-    queryKey: [...attendanceQueryKeys.emargements, page, limit],
-    queryFn: () => AttendanceService.getEmargements(page, limit),
+export function useEmargementsQuery(
+  page = 1, 
+  limit = 10, 
+  filters?: {
+    professorName?: string;
+    courseTitle?: string;
+    dateFrom?: Date | string;
+    dateTo?: Date | string;
+    status?: string;
+  }
+) {
+  return useQuery<{ emargements: Emargement[]; total: number }>({
+    queryKey: [...attendanceQueryKeys.emargements, page, limit, filters],
+    queryFn: () => AttendanceService.getEmargements(page, limit, filters),
   });
 }
 
@@ -207,7 +217,7 @@ export function useEmargementMutation() {
 // Hook pour récupérer les sessions de cours par semaine
 export function useClassSessionsByWeekQuery(startDate: Date) {
   const queryClient = useQueryClient();
-  const user = queryClient.getQueryData(["current-user"]) as any;
+  const user = queryClient.getQueryData(["current-user"]) as User;
   const userId = user?.user?.id || "";
   const formattedDate = startDate.toISOString().split("T")[0];
 
