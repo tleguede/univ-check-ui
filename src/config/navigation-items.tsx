@@ -77,6 +77,11 @@ export const mainSections: NavMenuGroup[] = [
         icon: PiBookmarkDuotone,
       },
       {
+        title: "Départements",
+        url: routes.board.departments,
+        icon: PiBuildingDuotone,
+      },
+      {
         title: "Utilisateurs",
         url: routes.board.users,
         icon: PiUserDuotone,
