@@ -13,8 +13,9 @@ export const routes = {
     academicYears: "/board/academic-years",
     organizations: "/board/organizations",
     attendance: "/board/attendance",
+    departments: "/board/departments",
+    courses: "/board/courses",
     programs: "/board/programs",
     universities: "/board/universities",
-    courses: "/board/courses",
   },
 };
