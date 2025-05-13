@@ -1,17 +1,21 @@
 export const routes = {
+  auth: {
+    signIn: "auth/sign-in",
+    signUp: "auth/sign-up",
+    forgotPassword: "auth/forgot-password",
+    resetPassword: "auth/reset-password",
+  },
   board: {
     home: "/board",
+    users: "/board/users",
+    profile: "/board/profile",
+    settings: "/board/settings",
     academicYears: "/board/academic-years",
     organizations: "/board/organizations",
-    universities: "/board/universities",
-    departments: "/board/departments", // Nouvelle route pour les départements
-    programs: "/board/programs",
-    users: "/board/users",
     attendance: "/board/attendance",
-    settings: "/board/settings",
-    profile: "/board/profile",
-  },
-  auth: {
-    signIn: "/auth/sign-in",
+    departments: "/board/departments",
+    courses: "/board/courses",
+    programs: "/board/programs",
+    universities: "/board/universities",
   },
 };

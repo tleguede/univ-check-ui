@@ -1,6 +1,7 @@
 import { IconType } from "react-icons";
 import {
   PiBookmarkDuotone,
+  PiBookOpenDuotone,
   PiBuildingDuotone,
   PiBuildingsDuotone,
   PiCalendarDuotone,
@@ -11,7 +12,6 @@ import {
 } from "react-icons/pi";
 import { routes } from "./routes";
 
-// Types definitions
 export interface TeamData {
   name: string;
   logo: string;
@@ -22,7 +22,7 @@ export interface NavMenuItem {
   url: string;
   icon?: IconType;
   isActive?: boolean;
-  permission?: string[]; // Ajout de la propriété permission pour gérer les autorisations
+  permission?: string[];
 }
 
 export interface NavMenuGroup {
@@ -82,6 +82,11 @@ export const mainSections: NavMenuGroup[] = [
         icon: PiBuildingDuotone,
       },
       {
+        title: "Cours", 
+        url: routes.board.courses,
+        icon: PiBookOpenDuotone,
+      },
+      {
         title: "Utilisateurs",
         url: routes.board.users,
         icon: PiUserDuotone,
@@ -90,7 +95,7 @@ export const mainSections: NavMenuGroup[] = [
         title: "Émargement",
         url: routes.board.attendance,
         icon: PiCheckSquareDuotone,
-        permission: ["TEACHER"], // Cette page est réservée aux professeurs
+        permission: ["TEACHER"], 
       },
     ],
   },
