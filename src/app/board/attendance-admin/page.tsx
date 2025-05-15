@@ -18,11 +18,12 @@ import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/s
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useClassSessionsQuery, useEmargementsQuery } from "@/hooks/queries/use-attendance.query";
 import { useCurrentUser } from "@/hooks/queries/use-auth.query";
+import { ClassSessionResponse } from "@/types/attendance.types";
 import { RiAdminLine, RiFileListLine, RiScanLine, RiUserSearchLine } from "@remixicon/react";
 import { redirect } from "next/navigation";
 import { useState } from "react";
-import { AttendanceList } from "./components/attendance-list";
 import { AdvancedFilter } from "./components/advanced-filter";
+import { AttendanceList } from "./components/attendance-list";
 import { NotificationSystem } from "./components/notification-system";
 import { SessionsList } from "./components/sessions-list";
 
@@ -36,10 +37,7 @@ export default function AttendanceAdminPage() {
   // Si l'utilisateur n'est pas administrateur, rediriger vers le tableau de bord
   if (user && !isAdmin) {
     redirect("/board");
-  }
-  // Requêtes pour les émargements et les sessions de cours
-  // Requêtes pour les émargements et les sessions de cours  const [filters, setFilters] = useState({});
-
+  } // Requêtes pour les émargements et les sessions de cours
   const {
     data: emargementsData,
     isLoading: isEmargementsLoading,
@@ -146,12 +144,12 @@ export default function AttendanceAdminPage() {
                   onPageSizeChange={setPageSize}
                   totalItems={emargementsData?.total || 0}
                 />
-              </TabsContent>
+              </TabsContent>{" "}
               <TabsContent value="sessions" className="mt-0">
                 <SessionsList
-                  sessions={sessionsData?.classSessions || []}
+                  sessions={(sessionsData as ClassSessionResponse)?.classSessions || []}
                   isLoading={isSessionsLoading}
-                  totalItems={sessionsData?.total || 0}
+                  totalItems={(sessionsData as ClassSessionResponse)?.total || 0}
                   onRefresh={() => refetchSessions()}
                   currentPage={currentPage}
                   onPageChange={setCurrentPage}
