@@ -10,7 +10,14 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationPrevious } from "@/components/ui/pagination";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useCreateEmargementMutation, useDeleteClassSessionMutation } from "@/hooks/queries/use-attendance.query";
@@ -183,14 +190,17 @@ export function SessionsList({
         <Pagination>
           <PaginationContent>
             <PaginationItem>
-              <PaginationFirst
+              <PaginationLink
                 href="#"
                 onClick={(e) => {
                   e.preventDefault();
                   onPageChange(1);
                 }}
                 isActive={currentPage === 1}
-              />
+                aria-label="Première page"
+              >
+                1
+              </PaginationLink>
             </PaginationItem>
             <PaginationItem>
               <PaginationPrevious
@@ -199,7 +209,6 @@ export function SessionsList({
                   e.preventDefault();
                   if (currentPage > 1) onPageChange(currentPage - 1);
                 }}
-                isActive={currentPage === 1}
               />
             </PaginationItem>
             {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
@@ -239,18 +248,20 @@ export function SessionsList({
                   e.preventDefault();
                   if (currentPage < totalPages) onPageChange(currentPage + 1);
                 }}
-                isActive={currentPage === totalPages}
               />
             </PaginationItem>
             <PaginationItem>
-              <PaginationLast
+              <PaginationLink
                 href="#"
                 onClick={(e) => {
                   e.preventDefault();
                   onPageChange(totalPages);
                 }}
                 isActive={currentPage === totalPages}
-              />
+                aria-label="Dernière page"
+              >
+                {totalPages}
+              </PaginationLink>
             </PaginationItem>
           </PaginationContent>
         </Pagination>
