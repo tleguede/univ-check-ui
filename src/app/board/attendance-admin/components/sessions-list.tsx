@@ -10,13 +10,13 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Pagination } from "@/components/ui/pagination";
+import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationPrevious } from "@/components/ui/pagination";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useCreateEmargementMutation, useDeleteClassSessionMutation } from "@/hooks/queries/use-attendance.query";
 import { ClassSession } from "@/types/attendance.types";
 import { RiCalendarCheckLine, RiMoreLine } from "@remixicon/react";
-import { format, parseISO } from "date-fns";
+import { format, isValid, parseISO } from "date-fns";
 import { fr } from "date-fns/locale";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -45,8 +45,9 @@ export function SessionsList({
   const [selectedSession, setSelectedSession] = useState<ClassSession | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
 
-  const { mutate: deleteClassSession, isPending: isDeletePending } = useDeleteClassSessionMutation();
+  const { mutate: deleteClassSession } = useDeleteClassSessionMutation();
   const { mutate: createEmargement, isPending } = useCreateEmargementMutation();
+
   const handleDeleteSession = (sessionId: string) => {
     if (confirm("Êtes-vous sûr de vouloir supprimer cette session de cours ?")) {
       deleteClassSession(sessionId, {
@@ -71,6 +72,20 @@ export function SessionsList({
     return hasEmargement ? "bg-green-500/20 text-green-600" : "bg-yellow-500/20 text-yellow-600";
   };
 
+  // Helper function to safely format dates
+  const safeFormatDate = (dateString: string | undefined, formatPattern: string) => {
+    if (!dateString) return "N/A";
+
+    try {
+      const date = parseISO(dateString);
+      if (!isValid(date)) return "Date invalide";
+      return format(date, formatPattern, { locale: fr });
+    } catch (error) {
+      console.error("Erreur de formatage de date:", error);
+      return "Erreur de date";
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -79,7 +94,7 @@ export function SessionsList({
     );
   }
 
-  const totalPages = Math.ceil(totalItems / pageSize);
+  const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
 
   return (
     <div className="space-y-4">
@@ -105,12 +120,11 @@ export function SessionsList({
             ) : (
               sessions.map((session) => (
                 <TableRow key={session.id}>
-                  <TableCell className="font-medium">{session.course?.title}</TableCell>
-                  <TableCell>{session.professor?.name}</TableCell>
-                  <TableCell>{format(parseISO(session.date), "dd/MM/yyyy", { locale: fr })}</TableCell>
+                  <TableCell className="font-medium">{session.course?.title || "N/A"}</TableCell>
+                  <TableCell>{session.professor?.name || `${session.professor?.name || ""}`.trim() || "N/A"}</TableCell>
+                  <TableCell>{safeFormatDate(session.date, "dd/MM/yyyy")}</TableCell>
                   <TableCell>
-                    {format(parseISO(session.heureDebut), "HH:mm", { locale: fr })} -
-                    {format(parseISO(session.heureFin), "HH:mm", { locale: fr })}
+                    {safeFormatDate(session.heureDebut, "HH:mm")} - {safeFormatDate(session.heureFin, "HH:mm")}
                   </TableCell>
                   <TableCell>
                     <span className={`px-2 py-1 rounded-full text-xs ${getStatusBadgeClass(!!session.emargement)}`}>
@@ -157,14 +171,19 @@ export function SessionsList({
             </SelectContent>
           </Select>
           <span className="text-sm text-muted-foreground">
-            {`${(currentPage - 1) * pageSize + 1}-${Math.min(currentPage * pageSize, totalItems)} sur ${totalItems}`}
+            {totalItems > 0
+              ? `${Math.min((currentPage - 1) * pageSize + 1, totalItems)}-${Math.min(
+                  currentPage * pageSize,
+                  totalItems
+                )} sur ${totalItems}`
+              : `0 sur 0`}
           </span>
         </div>
 
         <Pagination>
-          <Pagination.Content>
-            <Pagination.Item>
-              <Pagination.First
+          <PaginationContent>
+            <PaginationItem>
+              <PaginationFirst
                 href="#"
                 onClick={(e) => {
                   e.preventDefault();
@@ -172,9 +191,9 @@ export function SessionsList({
                 }}
                 isActive={currentPage === 1}
               />
-            </Pagination.Item>
-            <Pagination.Item>
-              <Pagination.Previous
+            </PaginationItem>
+            <PaginationItem>
+              <PaginationPrevious
                 href="#"
                 onClick={(e) => {
                   e.preventDefault();
@@ -182,15 +201,25 @@ export function SessionsList({
                 }}
                 isActive={currentPage === 1}
               />
-            </Pagination.Item>
+            </PaginationItem>
             {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-              const pageNumber = currentPage <= 3 ? i + 1 : currentPage >= totalPages - 2 ? totalPages - 4 + i : currentPage - 2 + i;
+              let pageNumber;
+
+              if (totalPages <= 5) {
+                pageNumber = i + 1;
+              } else if (currentPage <= 3) {
+                pageNumber = i + 1;
+              } else if (currentPage >= totalPages - 2) {
+                pageNumber = totalPages - 4 + i;
+              } else {
+                pageNumber = currentPage - 2 + i;
+              }
 
               if (pageNumber <= 0 || pageNumber > totalPages) return null;
 
               return (
-                <Pagination.Item key={pageNumber}>
-                  <Pagination.Link
+                <PaginationItem key={pageNumber}>
+                  <PaginationLink
                     href="#"
                     onClick={(e) => {
                       e.preventDefault();
@@ -199,12 +228,12 @@ export function SessionsList({
                     isActive={currentPage === pageNumber}
                   >
                     {pageNumber}
-                  </Pagination.Link>
-                </Pagination.Item>
+                  </PaginationLink>
+                </PaginationItem>
               );
             })}
-            <Pagination.Item>
-              <Pagination.Next
+            <PaginationItem>
+              <PaginationNext
                 href="#"
                 onClick={(e) => {
                   e.preventDefault();
@@ -212,9 +241,9 @@ export function SessionsList({
                 }}
                 isActive={currentPage === totalPages}
               />
-            </Pagination.Item>
-            <Pagination.Item>
-              <Pagination.Last
+            </PaginationItem>
+            <PaginationItem>
+              <PaginationLast
                 href="#"
                 onClick={(e) => {
                   e.preventDefault();
@@ -222,8 +251,8 @@ export function SessionsList({
                 }}
                 isActive={currentPage === totalPages}
               />
-            </Pagination.Item>
-          </Pagination.Content>
+            </PaginationItem>
+          </PaginationContent>
         </Pagination>
       </div>
 
@@ -240,23 +269,20 @@ export function SessionsList({
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <h3 className="font-semibold mb-1">Cours</h3>
-                  <p>{selectedSession.course?.title}</p>
+                  <p>{selectedSession.course?.title || "N/A"}</p>
                 </div>
                 <div>
                   <h3 className="font-semibold mb-1">Professeur</h3>
-                  <p>
-                    {selectedSession.professor?.firstName} {selectedSession.professor?.lastName}
-                  </p>
+                  <p>{selectedSession.professor?.name || ""}</p>
                 </div>
                 <div>
                   <h3 className="font-semibold mb-1">Date</h3>
-                  <p>{format(parseISO(selectedSession.date), "EEEE d MMMM yyyy", { locale: fr })}</p>
+                  <p>{safeFormatDate(selectedSession.date, "EEEE d MMMM yyyy")}</p>
                 </div>
                 <div>
                   <h3 className="font-semibold mb-1">Horaire</h3>
                   <p>
-                    {format(parseISO(selectedSession.heureDebut), "HH:mm", { locale: fr })} -
-                    {format(parseISO(selectedSession.heureFin), "HH:mm", { locale: fr })}
+                    {safeFormatDate(selectedSession.heureDebut, "HH:mm")} - {safeFormatDate(selectedSession.heureFin, "HH:mm")}
                   </p>
                 </div>
                 <div>
@@ -266,9 +292,7 @@ export function SessionsList({
                       {selectedSession.emargement ? "Émargée" : "En attente"}
                     </span>
                     {selectedSession.emargement && (
-                      <p className="text-xs">
-                        Le {format(parseISO(selectedSession.emargement.updatedAt), "dd/MM/yyyy à HH:mm", { locale: fr })}
-                      </p>
+                      <p className="text-xs">Le {safeFormatDate(selectedSession.emargement.updatedAt, "dd/MM/yyyy à HH:mm")}</p>
                     )}
                   </div>
                 </div>
@@ -295,12 +319,12 @@ export function SessionsList({
           )}
 
           <DialogFooter>
-            {!selectedSession?.emargement && (
+            {selectedSession && !selectedSession.emargement && selectedSession.professor && (
               <Button
                 variant="default"
                 className="me-auto"
                 onClick={() => {
-                  if (selectedSession) {
+                  if (selectedSession && selectedSession.professor) {
                     const input = {
                       status: "PRESENT",
                       classSessionId: selectedSession.id,
