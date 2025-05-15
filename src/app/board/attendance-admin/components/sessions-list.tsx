@@ -28,8 +28,18 @@ import { fr } from "date-fns/locale";
 import { useState } from "react";
 import { toast } from "sonner";
 
+interface ClassSessionWithEmargement extends ClassSession {
+  emargement?: {
+    id: string;
+    status: "PENDING" | "PRESENT" | "ABSENT" | "SUPERVISOR_CONFIRMED" | "CLASS_HEADER_CONFIRMED";
+    updatedAt: string;
+    comments?: string;
+  };
+  description?: string;
+}
+
 interface SessionsListProps {
-  sessions: ClassSession[];
+  sessions: ClassSessionWithEmargement[];
   isLoading: boolean;
   totalItems: number;
   onRefresh: () => void;
@@ -49,7 +59,7 @@ export function SessionsList({
   pageSize,
   onPageSizeChange,
 }: SessionsListProps) {
-  const [selectedSession, setSelectedSession] = useState<ClassSession | null>(null);
+  const [selectedSession, setSelectedSession] = useState<ClassSessionWithEmargement | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
 
   const { mutate: deleteClassSession } = useDeleteClassSessionMutation();
@@ -70,7 +80,7 @@ export function SessionsList({
     }
   };
 
-  const openDetailsDialog = (session: ClassSession) => {
+  const openDetailsDialog = (session: ClassSessionWithEmargement) => {
     setSelectedSession(session);
     setDialogOpen(true);
   };
@@ -90,6 +100,30 @@ export function SessionsList({
     } catch (error) {
       console.error("Erreur de formatage de date:", error);
       return "Erreur de date";
+    }
+  };
+
+  const handleCreateEmargement = (session: ClassSessionWithEmargement) => {
+    if (session.professor?.id) {
+      const input = {
+        status: "PRESENT" as "PENDING" | "PRESENT" | "ABSENT" | "SUPERVISOR_CONFIRMED" | "CLASS_HEADER_CONFIRMED",
+        classSessionId: session.id,
+        professorId: session.professor.id,
+      };
+
+      createEmargement(input, {
+        onSuccess: () => {
+          toast.success("Émargement manuel effectué avec succès");
+          setDialogOpen(false);
+          onRefresh();
+        },
+        onError: (error) => {
+          toast.error("Erreur lors de l'émargement manuel");
+          console.error("Erreur émargement manuel:", error);
+        },
+      });
+    } else {
+      toast.error("Impossible d'émarger: données du professeur manquantes");
     }
   };
 
@@ -334,27 +368,7 @@ export function SessionsList({
               <Button
                 variant="default"
                 className="me-auto"
-                onClick={() => {
-                  if (selectedSession && selectedSession.professor) {
-                    const input = {
-                      status: "PRESENT",
-                      classSessionId: selectedSession.id,
-                      professorId: selectedSession.professor.id,
-                    };
-
-                    createEmargement(input, {
-                      onSuccess: () => {
-                        toast.success("Émargement manuel effectué avec succès");
-                        setDialogOpen(false);
-                        onRefresh();
-                      },
-                      onError: (error) => {
-                        toast.error("Erreur lors de l'émargement manuel");
-                        console.error("Erreur émargement manuel:", error);
-                      },
-                    });
-                  }
-                }}
+                onClick={() => handleCreateEmargement(selectedSession)}
                 disabled={isPending}
               >
                 <RiCalendarCheckLine className="mr-2" />
