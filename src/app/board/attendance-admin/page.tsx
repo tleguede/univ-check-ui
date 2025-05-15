@@ -31,21 +31,22 @@ export default function AttendanceAdminPage() {
   const isAdmin = user?.user?.role === "ADMIN";
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
+  const [filters, setFilters] = useState({});
 
   // Si l'utilisateur n'est pas administrateur, rediriger vers le tableau de bord
   if (user && !isAdmin) {
     redirect("/board");
   }
-
+  // Requêtes pour les émargements et les sessions de cours
   // Requêtes pour les émargements et les sessions de cours  const [filters, setFilters] = useState({});
-  
+
   const {
     data: emargementsData,
     isLoading: isEmargementsLoading,
     refetch: refetchEmargements,
   } = useEmargementsQuery(currentPage, pageSize, filters);
 
-  const { data: sessionsData, isLoading: isSessionsLoading, refetch: refetchSessions } = useClassSessionsQuery(currentPage, pageSize);
+  const { data: sessionsData, isLoading: isSessionsLoading, refetch: refetchSessions } = useClassSessionsQuery();
 
   // Rafraîchir les données selon l'onglet actif
   const refetchCurrentTab = (activeTab: string) => {
@@ -118,22 +119,23 @@ export default function AttendanceAdminPage() {
                 >
                   Actualiser
                 </Button>
-              </div>              <TabsContent value="emargements" className="mt-0">
-                <NotificationSystem 
+              </div>{" "}
+              <TabsContent value="emargements" className="mt-0">
+                <NotificationSystem
                   emargements={emargementsData?.emargements || []}
                   onRefresh={() => refetchEmargements()}
                   refreshInterval={60000}
                   filters={filters}
                 />
-                
-                <AdvancedFilter 
+
+                <AdvancedFilter
                   onFilterChange={(newFilters) => {
                     setFilters(newFilters);
                     setCurrentPage(1); // Réinitialiser la page lors d'un nouveau filtrage
                   }}
                   onRefresh={() => refetchEmargements()}
                 />
-                
+
                 <AttendanceList
                   emargements={emargementsData?.emargements || []}
                   isLoading={isEmargementsLoading}
@@ -145,7 +147,6 @@ export default function AttendanceAdminPage() {
                   totalItems={emargementsData?.total || 0}
                 />
               </TabsContent>
-
               <TabsContent value="sessions" className="mt-0">
                 <SessionsList
                   sessions={sessionsData?.classSessions || []}
