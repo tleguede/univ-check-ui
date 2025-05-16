@@ -92,6 +92,16 @@ export default function UsersTable({ users, isLoading, page, limit, total, onPag
   const inputRef = useRef<HTMLInputElement>(null);
   const totalPages = Math.ceil(total / limit);
 
+  // Get user initials for avatar fallback
+  const getInitials = (name: string) => {
+    return name
+      .split(" ")
+      .map((part) => part[0])
+      .join("")
+      .toUpperCase()
+      .substring(0, 2);
+  };
+
   const columns = useMemo<ColumnDef<User>[]>(
     () => [
       {
