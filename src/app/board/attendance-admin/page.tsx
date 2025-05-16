@@ -143,7 +143,8 @@ export default function AttendanceAdminPage() {
                   onPageSizeChange={setPageSize}
                   totalItems={emargementsData?.total || 0}
                 />
-              </TabsContent>{" "}              <TabsContent value="sessions" className="mt-0">
+              </TabsContent>{" "}
+              <TabsContent value="sessions" className="mt-0">
                 <SessionsList
                   sessions={sessionsData || []}
                   isLoading={isSessionsLoading}
