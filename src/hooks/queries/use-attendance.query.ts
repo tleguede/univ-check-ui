@@ -84,9 +84,12 @@ export function useUpdateAttendanceMutation() {
 
 // Nouveaux hooks pour les sessions de cours
 export function useClassSessionsQuery() {
-  return useQuery<ClassSession>({
+  return useQuery<ClassSession[]>({
     queryKey: [...attendanceQueryKeys.classSessions],
-    queryFn: () => ClassSessionService.getClassSessions(),
+    queryFn: async () => {
+      const response = await ClassSessionService.getClassSessions();
+      return response.classSessions || [];
+    },
   });
 }
 
