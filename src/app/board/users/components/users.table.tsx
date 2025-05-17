@@ -10,6 +10,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -127,7 +128,16 @@ export default function UsersTable({ users, isLoading, page, limit, total, onPag
       {
         accessorKey: "name",
         header: "Nom",
-        cell: (info) => <div className="font-medium">{info.getValue() as string}</div>,
+        cell: (info) => (
+          <div className="flex items-center gap-2">
+            <Avatar>
+              <AvatarFallback className="bg-accent text-muted-foreground text-xs">
+                {getInitials(info.getValue() as string)}
+              </AvatarFallback>
+            </Avatar>
+            <div className="font-medium">{info.getValue() as string}</div>
+          </div>
+        ),
         size: 180,
         enableHiding: false,
       },
