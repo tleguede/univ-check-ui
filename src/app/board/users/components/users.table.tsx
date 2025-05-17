@@ -56,6 +56,7 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import { useId, useMemo, useRef, useState, useTransition } from "react";
+import { toast } from "sonner";
 
 interface UsersTableProps {
   users: User[];
@@ -569,6 +570,11 @@ function RowActions({
           onSuccess: () => {
             onDelete(user.id!);
             setShowDeleteDialog(false);
+            toast.success("Utilisateur supprimé avec succès !");
+          },
+          onError: (error) => {
+            toast.error("Erreur lors de la suppression de l'utilisateur");
+            console.error("Suppression d'utilisateur échouée:", error);
           },
         });
       });
