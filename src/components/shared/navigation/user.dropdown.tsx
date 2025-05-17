@@ -1,4 +1,4 @@
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -12,7 +12,7 @@ import {
 
 import { routes } from "@/config/routes";
 import { useCurrentUser, useSignOutMutation } from "@/hooks/queries/use-auth.query";
-import { RiLogoutBoxLine, RiSettingsLine, RiTeamLine } from "@remixicon/react";
+import { RiLogoutBoxLine, RiSettingsLine } from "@remixicon/react";
 import { useRouter } from "next/navigation";
 
 export default function UserDropdown() {
@@ -22,8 +22,10 @@ export default function UserDropdown() {
 
   const handleSignOut = () => {
     signOut();
-    router.replace(routes.auth.signIn);
+    router.push(routes.auth.signIn);
   };
+
+  const userInfo = user?.user;
 
   // Get user initials for avatar fallback
   const getInitials = (name: string) => {
@@ -40,23 +42,19 @@ export default function UserDropdown() {
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="h-auto p-0 hover:bg-transparent">
           <Avatar className="size-8">
-            <AvatarImage
-              src={user?.image || "https://res.cloudinary.com/dlzlfasou/image/upload/v1741345506/user_sam4wh.png"}
-              width={32}
-              height={32}
-              alt={user?.name || "Profile image"}
-            />
-            <AvatarFallback>{user?.name ? getInitials(user.name) : "U"}</AvatarFallback>
+            <AvatarFallback className="bg-primary/10 text-primary font-medium">
+              {userInfo?.name ? getInitials(userInfo.name) : "U"}
+            </AvatarFallback>
           </Avatar>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="max-w-64" align="end">
         <DropdownMenuLabel className="flex min-w-0 flex-col">
           <span className="truncate text-sm font-medium text-foreground">
-            {isLoading ? "Chargement..." : user?.name || "Utilisateur"}
+            {isLoading ? "Chargement..." : userInfo?.name || "Utilisateur"}
           </span>
-          <span className="truncate text-xs font-normal text-muted-foreground">{user?.email || ""}</span>
-          {user?.role && <span className="truncate text-xs font-semibold mt-1 text-primary">{user.role}</span>}
+          <span className="truncate text-xs font-normal text-muted-foreground">{userInfo?.email || ""}</span>
+          {userInfo?.role && <span className="truncate text-xs font-semibold mt-1 text-primary">{userInfo.role}</span>}
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>

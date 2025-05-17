@@ -1,6 +1,7 @@
-import { authClient } from "@/lib/client";
 import { SignInInput } from "@/schema/sign-in.schema";
 import { AuthService } from "@/server/services/auth.service";
+import { AuthResponse } from "@/types/auth.types";
+import { setCookie } from "@/utils/cookies";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 
@@ -8,19 +9,6 @@ export const authQueryKeys = {
   user: ["currentUser"],
   session: ["session"],
 };
-const SESSION_EXPIRY = 60 * 60 * 24 * 7;
-
-// Fonction utilitaire pour récupérer le token depuis les cookies
-function getTokenFromCookies(): string | null {
-  const cookies = document.cookie.split(';');
-  for (const cookie of cookies) {
-    const [name, value] = cookie.trim().split('=');
-    if (name === 'auth-token') {
-      return value;
-    }
-  }
-  return null;
-}
 
 export function useSignInMutation() {
   const queryClient = useQueryClient();
@@ -29,30 +17,22 @@ export function useSignInMutation() {
     mutationFn: (credentials: SignInInput) => AuthService.signIn(credentials),
     onSuccess: async (data) => {
       try {
-        // Stocker le token uniquement dans les cookies
-        document.cookie = `auth-token=${data.token}; path=/; max-age=${SESSION_EXPIRY}; SameSite=Lax`;
-        
-        // Mettre à jour le cache avec les données initiales
-        queryClient.setQueryData(authQueryKeys.user, data.user);
-        
-        // Attendre un court instant pour s'assurer que le token est bien stocké
-        await new Promise(resolve => setTimeout(resolve, 100));
-        
-        // Récupérer les données complètes de l'utilisateur
-        const userData = await AuthService.getCurrentUser(data.token);
-        if (userData) {
-          // Mettre à jour le cache avec les données complètes
-          queryClient.setQueryData(authQueryKeys.user, userData);
-          // Forcer l'invalidation du cache pour s'assurer que les composants se mettent à jour
-          await queryClient.invalidateQueries({ 
-            queryKey: authQueryKeys.user,
-            refetchType: 'active'
-          });
+        // Stocker les infos utilisateur dans le localStorage pour la compatibilité avec le code existant
+        if (typeof window !== "undefined") {
+          localStorage.setItem("auth-user", JSON.stringify(data));
         }
+
+        // Toujours définir le cookie pour le token (fonctionne côté client et est accessible côté serveur)
+        if (data.token) {
+          setCookie("auth-token", data.token, 7); // Cookie valide pour 7 jours
+        }
+
+        // Mettre à jour le cache React Query
+        queryClient.setQueryData(authQueryKeys.user, data);
       } catch (error) {
-        console.error("Erreur lors de la récupération des données de l'utilisateur:", error);
-        // En cas d'erreur, nettoyer le token
-        document.cookie = 'auth-token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+        if (typeof window !== "undefined") {
+          localStorage.removeItem("auth-user");
+        }
         throw error;
       }
     },
@@ -65,9 +45,11 @@ export function useSignOutMutation() {
   return useMutation({
     mutationFn: () => AuthService.signOut(),
     onSuccess: () => {
-      // Supprimer le token des cookies
-      document.cookie = 'auth-token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
-
+      if (typeof window !== "undefined") {
+        localStorage.removeItem("auth-user");
+      }
+      // Supprimer le cookie d'authentification
+      setCookie("auth-token", "", -1);
       queryClient.setQueryData(authQueryKeys.user, null);
       queryClient.invalidateQueries({ queryKey: authQueryKeys.user });
     },
@@ -75,56 +57,82 @@ export function useSignOutMutation() {
 }
 
 export function useCurrentUser() {
-  const [token, setToken] = useState<string | null>(null);
+  const [user, setUser] = useState<AuthResponse | null>(null);
+  const queryClient = useQueryClient();
 
+  // This effect handles the localStorage-based authentication
   useEffect(() => {
-    // Fonction pour mettre à jour le token
-    const updateToken = () => {
-      const storedToken = getTokenFromCookies();
-      setToken(storedToken);
-    };
-
-    // Mettre à jour le token initial
-    updateToken();
-
-    // Écouter les changements dans les cookies
-    const checkCookies = () => {
-      updateToken();
-    };
-
-    // Vérifier les cookies toutes les secondes
-    const interval = setInterval(checkCookies, 1000);
-
-    // Nettoyer l'intervalle
-    return () => {
-      clearInterval(interval);
-    };
-  }, []);
+    // Check if window is defined (we're in the browser)
+    if (typeof window !== "undefined") {
+      const updateUser = () => {
+        // Try to get from localStorage first for backward compatibility
+        const stored = localStorage.getItem("auth-user");
+        if (stored) {
+          try {
+            const parsedUser = JSON.parse(stored);
+            setUser(parsedUser);
+            // Also update the query cache to ensure consistency
+            queryClient.setQueryData(authQueryKeys.user, parsedUser);
+          } catch {
+            setUser(null);
+          }
+        } else {
+          setUser(null);
+        }
+      };
+      updateUser();
+      window.addEventListener("storage", updateUser);
+      return () => window.removeEventListener("storage", updateUser);
+    }
+  }, [queryClient]);
+  // This effect handles the cookie-based authentication
+  useEffect(() => {
+    // Always try to get user data on mount, regardless of user state
+    if (typeof window !== "undefined") {
+      import("@/utils/auth-utils").then((module) => {
+        module.getUserData().then((userData) => {
+          if (userData) {
+            setUser(userData);
+            // Update localStorage for backward compatibility
+            localStorage.setItem("auth-user", JSON.stringify(userData));
+            // Update query cache
+            queryClient.setQueryData(authQueryKeys.user, userData);
+          }
+        });
+      });
+    }
+  }, [queryClient]);
 
   return useQuery({
     queryKey: authQueryKeys.user,
     queryFn: async () => {
-      if (!token) return null;
+      // During server-side rendering or build time, we won't execute this code
+      // because React Query handles SSR properly
+
+      // Try to get from in-memory state first
+      if (user) return user;
+
+      // If not available in state, try to get from getUserData function
       try {
-        const user = await AuthService.getCurrentUser(token);
-        if (!user) {
-          // Si l'utilisateur n'est pas trouvé, supprimer le token
-          document.cookie = 'auth-token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
-          setToken(null);
+        const userData = await import("@/utils/auth-utils").then((module) => module.getUserData());
+        if (userData) {
+          // Store the user data in state and localStorage for future use
+          setUser(userData);
+          if (typeof window !== "undefined") {
+            localStorage.setItem("auth-user", JSON.stringify(userData));
+          }
+          return userData;
         }
-        return user;
       } catch (error) {
-        console.error("Erreur lors de la récupération de l'utilisateur:", error);
-        // En cas d'erreur, supprimer le token
-        document.cookie = 'auth-token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
-        setToken(null);
-        return null;
+        console.error("Error fetching user data:", error);
       }
+
+      return null;
     },
-    enabled: !!token,
-    staleTime: 1000 * 60 * 5,
+    enabled: true,
+    staleTime: 1000 * 60 * 60, // Cache for 1 hour
     retry: 1,
-    refetchOnWindowFocus: true,
-    refetchOnMount: true,
+    refetchOnWindowFocus: true, // Refetch when window gets focus
+    refetchOnMount: true, // Important: refetch when component mounts
   });
 }
