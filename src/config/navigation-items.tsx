@@ -71,16 +71,19 @@ export const mainSections: NavMenuGroup[] = [
         title: "Universités",
         url: routes.board.universities,
         icon: PiBuildingDuotone,
+        permission: ["ADMIN", "SUPERVISOR"],
       },
       {
         title: "Programmes",
         url: routes.board.programs,
         icon: PiBookmarkDuotone,
+        permission: ["ADMIN", "SUPERVISOR"],
       },
       {
         title: "Départements",
         url: routes.board.departments,
         icon: PiBuildingDuotone,
+        permission: ["ADMIN", "SUPERVISOR"],
       },
       {
         title: "Cours",
@@ -96,6 +99,7 @@ export const mainSections: NavMenuGroup[] = [
         title: "Utilisateurs",
         url: routes.board.users,
         icon: PiUserDuotone,
+        permission: ["ADMIN", "SUPERVISOR"],
       },
       {
         title: "Émargement",
