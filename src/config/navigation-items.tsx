@@ -61,11 +61,13 @@ export const mainSections: NavMenuGroup[] = [
         title: "Années Académiques",
         url: routes.board.academicYears,
         icon: PiCalendarDuotone,
+        permission: ["ADMIN", "SUPERVISOR"],
       },
       {
         title: "Organisations",
         url: routes.board.organizations,
         icon: PiBuildingsDuotone,
+        permission: ["ADMIN"],
       },
       {
         title: "Universités",
@@ -89,6 +91,7 @@ export const mainSections: NavMenuGroup[] = [
         title: "Cours",
         url: routes.board.courses,
         icon: PiBookOpenDuotone,
+        permission: ["ADMIN", "SUPERVISOR"],
       },
       {
         title: "Sessions de cours",
