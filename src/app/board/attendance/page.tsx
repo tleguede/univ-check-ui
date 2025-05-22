@@ -34,7 +34,6 @@ export default function AttendancePage() {
 
   // Formater la date pour la requête API
   const weekStartDateString = format(selectedWeekStart, "yyyy-MM-dd");
-
   // Requête pour les cours du jour
   const {
     data: todaysCourses,
