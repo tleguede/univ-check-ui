@@ -11,51 +11,31 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationEllipsis,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useDeleteAcademicYearMutation } from "@/hooks/queries/use-academic-year.query";
 import { formatDate } from "@/lib/utils";
 import { AcademicYear } from "@/types/academic-year.types";
 import { RiDeleteBinLine, RiEdit2Line } from "@remixicon/react";
-import { useState } from "react";
-import { EditAcademicYearDialog } from "./edit-academic-year.dialog";
 
 interface AcademicYearsTableProps {
   academicYears: AcademicYear[];
   isLoading: boolean;
-  page: number;
-  limit: number;
-  total: number;
-  onPageChange: (page: number) => void;
   isAdmin: boolean;
+  onEdit: (year: AcademicYear) => void;
+  onDelete: () => void;
 }
 
-export function AcademicYearsTable({ academicYears, isLoading, page, limit, total, onPageChange, isAdmin }: AcademicYearsTableProps) {
-  const [editingYear, setEditingYear] = useState<AcademicYear | null>(null);
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-
+export function AcademicYearsTable({ academicYears, isLoading, isAdmin, onEdit, onDelete }: AcademicYearsTableProps) {
   const { mutate: deleteAcademicYear } = useDeleteAcademicYearMutation();
 
-  const handleEdit = (year: AcademicYear) => {
-    setEditingYear(year);
-    setIsEditDialogOpen(true);
-  };
-
   const handleDelete = (id: string) => {
-    deleteAcademicYear(id);
+    deleteAcademicYear(id, {
+      onSuccess: () => {
+        onDelete();
+      },
+    });
   };
-
-  const totalPages = Math.ceil(total / limit);
 
   if (isLoading) {
     return (
@@ -78,26 +58,22 @@ export function AcademicYearsTable({ academicYears, isLoading, page, limit, tota
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead className="w-[200px]">Nom</TableHead>
-            <TableHead>Date de début</TableHead>
-            <TableHead>Date de fin</TableHead>
-            <TableHead>Statut</TableHead>
+            <TableHead className="w-[250px]">Période</TableHead>
+            <TableHead>Date de création</TableHead>
+            <TableHead>Date de modification</TableHead>
             <TableHead className="text-right">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {academicYears.map((year) => (
             <TableRow key={year.id}>
-              <TableCell className="font-medium">{year.name}</TableCell>
-              <TableCell>{formatDate(year.startDate)}</TableCell>
-              <TableCell>{formatDate(year.endDate)}</TableCell>
-              <TableCell>
-                <Badge variant={year.isActive ? "default" : "outline"}>{year.isActive ? "Active" : "Inactive"}</Badge>
-              </TableCell>
+              <TableCell className="font-medium">{year.periode}</TableCell>
+              <TableCell>{formatDate(year.createdAt)}</TableCell>
+              <TableCell>{formatDate(year.updatedAt)}</TableCell>
               <TableCell className="text-right">
                 {isAdmin && (
                   <div className="flex justify-end gap-2">
-                    <Button size="sm" variant="ghost" onClick={() => handleEdit(year)}>
+                    <Button size="sm" variant="ghost" onClick={() => onEdit(year)}>
                       <RiEdit2Line className="h-4 w-4" />
                       <span className="sr-only">Modifier</span>
                     </Button>
@@ -113,7 +89,8 @@ export function AcademicYearsTable({ academicYears, isLoading, page, limit, tota
                         <AlertDialogHeader>
                           <AlertDialogTitle>Êtes-vous sûr?</AlertDialogTitle>
                           <AlertDialogDescription>
-                            Cette action ne peut pas être annulée. Cela supprimera définitivement l&apos;année académique {year.name}.
+                            Cette action ne peut pas être annulée. Cela supprimera définitivement l&apos;année académique{" "}
+                            {year.periode}.
                           </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
@@ -134,49 +111,6 @@ export function AcademicYearsTable({ academicYears, isLoading, page, limit, tota
           ))}
         </TableBody>
       </Table>
-
-      {totalPages > 1 && (
-        <div className="flex justify-center mt-4">
-          <Pagination>
-            <PaginationContent>
-              <PaginationItem>
-                <PaginationPrevious onClick={() => page > 1 && onPageChange(page - 1)} disabled={page === 1} />
-              </PaginationItem>
-
-              {[...Array(totalPages)].map((_, i) => {
-                const pageNumber = i + 1;
-                // Only show current page, first, last, and pages around current
-                if (pageNumber === 1 || pageNumber === totalPages || (pageNumber >= page - 1 && pageNumber <= page + 1)) {
-                  return (
-                    <PaginationItem key={pageNumber}>
-                      <PaginationLink onClick={() => onPageChange(pageNumber)} isActive={page === pageNumber}>
-                        {pageNumber}
-                      </PaginationLink>
-                    </PaginationItem>
-                  );
-                }
-
-                // Show ellipsis for gaps
-                if (pageNumber === page - 2 || pageNumber === page + 2) {
-                  return (
-                    <PaginationItem key={`ellipsis-${pageNumber}`}>
-                      <PaginationEllipsis />
-                    </PaginationItem>
-                  );
-                }
-
-                return null;
-              })}
-
-              <PaginationItem>
-                <PaginationNext onClick={() => page < totalPages && onPageChange(page + 1)} disabled={page === totalPages} />
-              </PaginationItem>
-            </PaginationContent>
-          </Pagination>
-        </div>
-      )}
-
-      <EditAcademicYearDialog isOpen={isEditDialogOpen} onOpenChange={setIsEditDialogOpen} academicYear={editingYear} />
     </div>
   );
 }
