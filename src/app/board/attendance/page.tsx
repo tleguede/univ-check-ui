@@ -1,6 +1,7 @@
 "use client";
 
 import { AppSidebar } from "@/components/shared/navigation/app.sidebar";
+import { NotificationDropdown } from "@/components/shared/navigation/notification.dropdown";
 import UserDropdown from "@/components/shared/navigation/user.dropdown";
 import FeedbackDialog from "@/components/shared/others/feedback.dialog";
 import { ModeToggle } from "@/components/shared/theme/mode-toggle";
@@ -79,10 +80,12 @@ export default function AttendancePage() {
                 </BreadcrumbItem>
               </BreadcrumbList>
             </Breadcrumb>
-          </div>
+          </div>{" "}
           <div className="flex gap-3 ml-auto">
             <FeedbackDialog />
             <ModeToggle />
+            {/* Composant de notification */}
+            <NotificationDropdown />
             <UserDropdown />
           </div>
         </header>
