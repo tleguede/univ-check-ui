@@ -5,6 +5,7 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/componen
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { useEmargementMutation } from "@/hooks/queries/use-attendance.query";
+import { useCurrentUser } from "@/hooks/queries/use-auth.query";
 import { Course } from "@/types/attendance.types";
 import { RiArrowLeftSLine, RiArrowRightSLine, RiCalendarCheckLine, RiMapPinLine, RiTimeLine } from "@remixicon/react";
 import { addDays, addWeeks, format, isSameDay, startOfWeek, subWeeks } from "date-fns";
@@ -67,16 +68,23 @@ export function WeeklyCoursesCalendar({ courses, isLoading, onAttendanceSubmitte
     setComments("");
     setDialogOpen(true);
   };
+  const { data: user } = useCurrentUser();
+  const userId = user?.user?.id;
 
   // Soumettre l'émargement
   const handleSubmitEmargement = () => {
     if (!selectedCourse) return;
 
+    if (!userId) {
+      toast.error("Vous devez être connecté pour émarger");
+      return;
+    }
+
     submitEmargement(
       {
         classSessionId: selectedCourse.id,
         status: "PRESENT",
-        professorId: "", // À récupérer depuis le contexte utilisateur
+        professorId: userId,
         comments: comments.trim() || undefined,
       },
       {
