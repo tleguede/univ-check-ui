@@ -1,5 +1,5 @@
 import { AcademicYearService } from "@/server/services/academic-year.service";
-import { CreateAcademicYearInput, UpdateAcademicYearInput } from "@/types/academic-year.types";
+import { AcademicYear, CreateAcademicYearInput, UpdateAcademicYearInput } from "@/types/academic-year.types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 export const academicYearQueryKeys = {
@@ -7,15 +7,15 @@ export const academicYearQueryKeys = {
   academicYear: (id: string) => ["academic-year", id],
 };
 
-export function useAcademicYearsQuery(page = 1, limit = 10) {
-  return useQuery({
-    queryKey: [...academicYearQueryKeys.academicYears, page, limit],
-    queryFn: () => AcademicYearService.getAcademicYears(page, limit),
+export function useAcademicYearsQuery() {
+  return useQuery<AcademicYear[]>({
+    queryKey: academicYearQueryKeys.academicYears,
+    queryFn: () => AcademicYearService.getAcademicYears(),
   });
 }
 
 export function useAcademicYearQuery(id: string) {
-  return useQuery({
+  return useQuery<AcademicYear>({
     queryKey: academicYearQueryKeys.academicYear(id),
     queryFn: () => AcademicYearService.getAcademicYearById(id),
     enabled: !!id,
