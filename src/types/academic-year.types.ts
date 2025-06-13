@@ -1,31 +1,22 @@
 export interface AcademicYear {
   id: string;
-  name: string;
-  startDate: string;
-  endDate: string;
-  isActive: boolean;
+  periode: string;
   createdAt: string;
   updatedAt: string;
 }
 
-export interface AcademicYearResponse {
-  academicYears: AcademicYear[];
-  total: number;
-  page: number;
-  limit: number;
-}
+// export interface AcademicYearResponse {
+//   academicYears: AcademicYear[];
+//   total: number;
+//   page: number;
+//   limit: number;
+// }
 
 export interface CreateAcademicYearInput {
-  name: string;
-  startDate: string;
-  endDate: string;
-  isActive?: boolean;
+  periode: string;
 }
 
 export interface UpdateAcademicYearInput {
   id: string;
-  name?: string;
-  startDate?: string;
-  endDate?: string;
-  isActive?: boolean;
+  periode?: string;
 }

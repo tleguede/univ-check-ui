@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
@@ -21,6 +21,8 @@ import { useRouter } from "next/navigation";
 export function SignInForm() {
   const router = useRouter();
   const [formError, setFormError] = useState<string | null>(null);
+  const [isRedirecting, setIsRedirecting] = useState(false);
+
   const form = useForm<SignInInput>({
     resolver: zodResolver(signInSchema),
     defaultValues: {
@@ -31,18 +33,31 @@ export function SignInForm() {
 
   const { mutate: signIn, isPending } = useSignInMutation();
 
+  // Effet pour gérer la redirection de manière fiable
+  useEffect(() => {
+    // Cette logique ne s'exécute que lorsque isRedirecting est true
+    if (isRedirecting) {
+      const redirectTimer = setTimeout(() => {
+        router.replace(routes.board.home);
+      }, 500);
+
+      return () => clearTimeout(redirectTimer);
+    }
+  }, [isRedirecting, router]);
+
   function onSubmit(data: SignInInput) {
     setFormError(null);
     // Toast de chargement
     const loadingToast = toast.loading("Connexion en cours...");
 
     signIn(data, {
-      onSuccess: async (data) => {
+      onSuccess: (data) => {
         try {
-          // Attendre un court instant pour s'assurer que tout est bien mis à jour
-          await new Promise(resolve => setTimeout(resolve, 200));
           toast.success(`Bienvenue, ${data.user.name}`);
-          router.push(routes.board.home);
+          console.log("Authentication successful, preparing to redirect to:", routes.board.home);
+
+          // Déclencher la redirection via l'effet
+          setIsRedirecting(true);
         } catch (error) {
           console.error("Erreur lors de la redirection:", error);
           toast.error("Une erreur est survenue lors de la connexion.");
@@ -64,6 +79,7 @@ export function SignInForm() {
     });
   }
 
+  // Le reste du code reste inchangé
   return (
     <Card className="w-full max-w-md">
       <CardHeader>
@@ -107,8 +123,8 @@ export function SignInForm() {
                 </FormItem>
               )}
             />
-            <Button type="submit" className="w-full" disabled={isPending}>
-              {isPending ? "Connexion en cours..." : "Se connecter"}
+            <Button type="submit" className="w-full" disabled={isPending || isRedirecting}>
+              {isPending ? "Connexion en cours..." : isRedirecting ? "Redirection..." : "Se connecter"}
             </Button>
           </form>
         </Form>

@@ -1,8 +1,18 @@
 import { IconType } from "react-icons";
-import { PiCalendarDuotone, PiGearDuotone, PiHouseDuotone, PiUserDuotone } from "react-icons/pi";
+import {
+  PiBookmarkDuotone,
+  PiBookOpenDuotone,
+  PiBuildingDuotone,
+  PiBuildingsDuotone,
+  PiCalendarCheckDuotone,
+  PiCalendarDuotone,
+  PiCheckSquareDuotone,
+  PiGearDuotone,
+  PiHouseDuotone,
+  PiUserDuotone,
+} from "react-icons/pi";
 import { routes } from "./routes";
 
-// Types definitions
 export interface TeamData {
   name: string;
   logo: string;
@@ -13,6 +23,7 @@ export interface NavMenuItem {
   url: string;
   icon?: IconType;
   isActive?: boolean;
+  permission?: string[];
 }
 
 export interface NavMenuGroup {
@@ -50,11 +61,60 @@ export const mainSections: NavMenuGroup[] = [
         title: "Années Académiques",
         url: routes.board.academicYears,
         icon: PiCalendarDuotone,
+        permission: ["ADMIN", "SUPERVISOR"],
+      },
+      {
+        title: "Organisations",
+        url: routes.board.organizations,
+        icon: PiBuildingsDuotone,
+        permission: ["ADMIN"],
+      },
+      {
+        title: "Universités",
+        url: routes.board.universities,
+        icon: PiBuildingDuotone,
+        permission: ["ADMIN", "SUPERVISOR"],
+      },
+      {
+        title: "Programmes",
+        url: routes.board.programs,
+        icon: PiBookmarkDuotone,
+        permission: ["ADMIN", "SUPERVISOR"],
+      },
+      {
+        title: "Départements",
+        url: routes.board.departments,
+        icon: PiBuildingDuotone,
+        permission: ["ADMIN", "SUPERVISOR"],
+      },
+      {
+        title: "Cours",
+        url: routes.board.courses,
+        icon: PiBookOpenDuotone,
+        permission: ["ADMIN", "SUPERVISOR"],
+      },
+      {
+        title: "Sessions de cours",
+        url: routes.board.classSessions,
+        icon: PiCalendarCheckDuotone,
       },
       {
         title: "Utilisateurs",
         url: routes.board.users,
         icon: PiUserDuotone,
+        permission: ["ADMIN", "SUPERVISOR"],
+      },
+      {
+        title: "Émargement",
+        url: routes.board.attendance,
+        icon: PiCheckSquareDuotone,
+        permission: ["TEACHER"],
+      },
+      {
+        title: "Gestion des émargements",
+        url: routes.board.attendanceAdmin,
+        icon: PiCheckSquareDuotone,
+        permission: ["ADMIN", "SUPERVISOR"],
       },
     ],
   },
