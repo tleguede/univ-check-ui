@@ -1,5 +1,7 @@
 "use client";
 
+import { CalendarProvider } from "@/components/calendar-context";
+import AttendanceCalendar from "@/components/calendar/attendance-calendar";
 import { AppSidebar } from "@/components/shared/navigation/app.sidebar";
 import { NotificationDropdown } from "@/components/shared/navigation/notification.dropdown";
 import UserDropdown from "@/components/shared/navigation/user.dropdown";
@@ -23,7 +25,6 @@ import { RiCalendar2Line, RiCheckboxLine, RiScanLine } from "@remixicon/react";
 import { format, startOfWeek } from "date-fns";
 import { useState } from "react";
 import { TodaysCoursesList } from "./components/todays-courses-list";
-import { WeeklyCoursesCalendar } from "./components/weekly-courses-calendar";
 
 export default function AttendancePage() {
   const { data: user } = useCurrentUser();
@@ -121,22 +122,21 @@ export default function AttendancePage() {
                   Actualiser
                 </Button>
               </div>
-
               <TabsContent value="today" className="mt-0">
                 <TodaysCoursesList
                   courses={todaysCourses || []}
                   isLoading={isTodayLoading}
                   onAttendanceSubmitted={() => refetchTodaysCourses()}
                 />
-              </TabsContent>
-
+              </TabsContent>{" "}
               <TabsContent value="week" className="mt-0">
-                <WeeklyCoursesCalendar
-                  courses={weekCourses || []}
-                  isLoading={isWeekLoading}
-                  onAttendanceSubmitted={() => refetchWeekCourses()}
-                  weekStartDate={selectedWeekStart}
-                />
+                <CalendarProvider>
+                  <AttendanceCalendar
+                    courses={weekCourses || []}
+                    isLoading={isWeekLoading}
+                    onAttendanceSubmitted={() => refetchWeekCourses()}
+                  />
+                </CalendarProvider>
               </TabsContent>
             </Tabs>
           ) : (
